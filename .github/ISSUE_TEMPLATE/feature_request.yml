@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an idea
+labels: [feature]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should SkyReplay do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it be fun or useful?
+  - type: textarea
+    id: done
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] ..."
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to build this myself
