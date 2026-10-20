@@ -1,5 +1,6 @@
-import type { Airport } from "./airports";
-import type { Flight, Point } from "./types";
+import type { Airport } from "../types/airport";
+import type { Flight, Point } from "../types/flight";
+import { distanceKm } from "../utils/geo";
 
 // Receivers often lose aircraft in the last few hundred feet, so arrivals vanish just above the
 // runway and departures pop up already climbing. These fill in the missing bit with a simple
@@ -16,11 +17,6 @@ const TAXI_KT = 20;
 const FT_TO_KM = 0.0003048;
 const KT_TO_KM_PER_S = 1.852 / 3600;
 const SAMPLES = 6;
-
-function kmFrom(center: [number, number], lon: number, lat: number): number {
-  const dx = (lon - center[0]) * 111.32 * Math.cos((center[1] * Math.PI) / 180);
-  return Math.hypot(dx, (lat - center[1]) * 110.57);
-}
 
 /** Speed (kt) and heading (degrees clockwise from north) from point a to point b. */
 function motion(a: Point, b: Point): { kt: number; heading: number } {
@@ -104,7 +100,7 @@ function closeAndLow(p: Point, airport: Airport): boolean {
   return (
     p[3] > 0 &&
     p[3] - airport.elevationFt < MAX_HEIGHT_FT &&
-    kmFrom(airport.center, p[1], p[2]) < MAX_DISTANCE_KM
+    distanceKm(airport.center, [p[1], p[2]]) < MAX_DISTANCE_KM
   );
 }
 
@@ -116,7 +112,9 @@ export function fillMissingEnds(flights: Flight[], airport: Airport): Flight[] {
     const first = pts[0];
     const last = pts[pts.length - 1];
     const onAirport = (est: Point[]) =>
-      est.every((p) => kmFrom(airport.center, p[1], p[2]) < MAX_GROUND_KM);
+      est.every(
+        (p) => distanceKm(airport.center, [p[1], p[2]]) < MAX_GROUND_KM,
+      );
     let before = closeAndLow(first, airport)
       ? takeoff(first, pts[1], airport)
       : [];

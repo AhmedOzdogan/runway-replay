@@ -1,22 +1,23 @@
-import type { Airport } from "../airports";
+import type { Airport } from "../types/airport";
+import { h } from "../utils/dom";
+import { PILL } from "./styles";
 
 /** Row of airport buttons; calls `onSelect` with the airport code when one is clicked. */
 export function createAirportPicker(
   airports: Record<string, Airport>,
   onSelect: (code: string) => void,
 ): { element: HTMLElement; select: (code: string) => void } {
-  const element = document.createElement("nav");
-  element.className = "airport-picker";
-  element.setAttribute("aria-label", "Airport");
-
-  for (const [code, { name }] of Object.entries(airports)) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = name;
-    button.title = code;
-    button.dataset.code = code;
-    element.append(button);
-  }
+  const element = h(
+    "nav",
+    { class: "flex gap-1.5", "aria-label": "Airport" },
+    ...Object.entries(airports).map(([code, { name }]) =>
+      h(
+        "button",
+        { type: "button", class: PILL, title: code, "data-code": code },
+        name,
+      ),
+    ),
+  );
 
   function select(code: string): void {
     for (const b of element.querySelectorAll("button")) {

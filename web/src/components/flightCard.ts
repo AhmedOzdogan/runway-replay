@@ -1,8 +1,8 @@
-import type { Airport } from "../airports";
-import { query } from "../dom";
-import { AIRCRAFT_TYPES, AIRLINES } from "../names";
-import { distanceKm, type Plane } from "../replay";
-import type { Flight } from "../types";
+import { AIRCRAFT_TYPES, AIRLINES } from "../data/names";
+import type { Airport } from "../types/airport";
+import type { Flight, Plane } from "../types/flight";
+import { h } from "../utils/dom";
+import { distanceKm } from "../utils/geo";
 
 const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 
@@ -78,7 +78,7 @@ function status(plane: Plane, time: number): string {
 
 /**
  * Info card for the selected aircraft. Call `update` every frame while something is selected.
- * Text is set with textContent only: callsigns and registrations come from external data.
+ * Built with h() and filled with textContent only: callsigns and registrations come from external data.
  */
 export function createFlightCard(handlers: {
   onClose: () => void;
@@ -93,30 +93,95 @@ export function createFlightCard(handlers: {
   ) => void;
   hide: () => void;
 } {
-  const element = document.createElement("aside");
-  element.className = "flight-card";
-  element.hidden = true;
-  element.setAttribute("aria-live", "polite");
-  element.innerHTML = `
-    <button type="button" class="close" aria-label="Close">×</button>
-    <div class="callsign"></div>
-    <div class="airline"></div>
-    <div class="status"></div>
-    <div class="route"><span class="from"></span><span class="arrow">✈</span><span class="to"></span></div>
-    <dl>
-      <div><dt>Altitude</dt><dd class="altitude"></dd></div>
-      <div><dt>Speed</dt><dd class="speed"></dd></div>
-      <div><dt>Aircraft</dt><dd class="type"></dd></div>
-      <div><dt>Registration</dt><dd class="registration"></dd></div>
-      <div><dt>Distance</dt><dd class="distance"></dd></div>
-      <div><dt>Heading</dt><dd class="heading"></dd></div>
-    </dl>
-    <label class="follow"><input type="checkbox" /> Follow this plane</label>
-  `;
-  const field = (name: string) => query<HTMLElement>(element, `.${name}`);
-  const follow = query<HTMLInputElement>(element, ".follow input");
+  const fields = {
+    callsign: h("div", {
+      class: "text-2xl font-bold tracking-wide text-neon text-shadow-neon",
+    }),
+    airline: h("div", { class: "min-h-[1.4em] text-muted" }),
+    status: h("div", {
+      class:
+        "my-2.5 inline-block rounded-full bg-neon/10 px-2.5 py-0.5 text-[13px] text-neon",
+    }),
+    from: h("span"),
+    to: h("span"),
+    altitude: h("dd", { class: "mt-0.5 tabular-nums" }),
+    speed: h("dd", { class: "mt-0.5 tabular-nums" }),
+    type: h("dd", { class: "mt-0.5 tabular-nums" }),
+    registration: h("dd", { class: "mt-0.5 tabular-nums" }),
+    distance: h("dd", { class: "mt-0.5 tabular-nums" }),
+    heading: h("dd", { class: "mt-0.5 tabular-nums" }),
+  };
+  const stat = (label: string, value: HTMLElement) =>
+    h(
+      "div",
+      {},
+      h(
+        "dt",
+        { class: "text-[11px] tracking-wider text-muted uppercase" },
+        label,
+      ),
+      value,
+    );
+  const closeButton = h(
+    "button",
+    {
+      type: "button",
+      class:
+        "absolute top-2.5 right-2.5 size-7 cursor-pointer rounded-full border border-line text-lg leading-none hover:border-muted",
+      "aria-label": "Close",
+    },
+    "×",
+  );
+  const follow = h("input", { type: "checkbox" });
 
-  query(element, ".close").addEventListener("click", handlers.onClose);
+  const element = h(
+    "aside",
+    {
+      class:
+        "fixed top-[72px] right-4 z-10 w-[min(300px,calc(100vw-32px))] rounded-2xl border border-line bg-panel/95 p-4 shadow-card backdrop-blur-sm",
+      hidden: true,
+      "aria-live": "polite",
+    },
+    closeButton,
+    fields.callsign,
+    fields.airline,
+    fields.status,
+    h(
+      "div",
+      {
+        class:
+          "flex items-center justify-between text-xl font-semibold tracking-wider",
+      },
+      fields.from,
+      h(
+        "span",
+        {
+          class:
+            "mx-2.5 flex-1 border-b border-dashed border-line text-center text-sm leading-[0.1] text-muted",
+        },
+        "✈",
+      ),
+      fields.to,
+    ),
+    h(
+      "dl",
+      { class: "my-3.5 grid grid-cols-2 gap-x-3 gap-y-2.5" },
+      stat("Altitude", fields.altitude),
+      stat("Speed", fields.speed),
+      stat("Aircraft", fields.type),
+      stat("Registration", fields.registration),
+      stat("Distance", fields.distance),
+      stat("Heading", fields.heading),
+    ),
+    h(
+      "label",
+      { class: "flex cursor-pointer items-center gap-2 accent-neon" },
+      follow,
+      " Follow this plane",
+    ),
+  );
+
+  closeButton.addEventListener("click", handlers.onClose);
   follow.addEventListener("change", () => handlers.onFollow(follow.checked));
 
   function update(
@@ -127,23 +192,29 @@ export function createFlightCard(handlers: {
   ): void {
     element.hidden = false;
     const callsign = flight.callsign ?? flight.icao.toUpperCase();
-    field("callsign").textContent = callsign;
-    field("airline").textContent = AIRLINES[callsign.slice(0, 3)] ?? "";
-    field("type").textContent = flight.type
+    fields.callsign.textContent = callsign;
+    fields.airline.textContent = AIRLINES[callsign.slice(0, 3)] ?? "";
+    fields.type.textContent = flight.type
       ? (AIRCRAFT_TYPES[flight.type] ?? flight.type)
       : "Unknown";
-    field("registration").textContent = flight.registration ?? "—";
+    fields.registration.textContent = flight.registration ?? "—";
 
     const { kind } = flightKind(flight);
-    field("from").textContent =
+    fields.from.textContent =
       kind === "departure" || kind === "ground" ? airport.code : "?";
-    field("to").textContent =
+    fields.to.textContent =
       kind === "arrival" || kind === "ground" ? airport.code : "?";
 
     if (!plane) {
-      field("status").textContent = `Not near ${airport.code} at this time`;
-      for (const name of ["altitude", "speed", "distance", "heading"])
-        field(name).textContent = "—";
+      fields.status.textContent = `Not near ${airport.code} at this time`;
+      for (const dd of [
+        fields.altitude,
+        fields.speed,
+        fields.distance,
+        fields.heading,
+      ]) {
+        dd.textContent = "—";
+      }
       return;
     }
     const { estimatedBefore, estimatedAfter } = plane.flight;
@@ -151,21 +222,18 @@ export function createFlightCard(handlers: {
       plane.parkedSince === null &&
       ((estimatedBefore !== undefined && time < estimatedBefore) ||
         (estimatedAfter !== undefined && time > estimatedAfter));
-    field("status").textContent =
+    fields.status.textContent =
       status(plane, time) + (estimated ? " · estimated" : "");
     const trend =
       plane.verticalRate > 300 ? " ↑" : plane.verticalRate < -300 ? " ↓" : "";
-    field("altitude").textContent =
+    fields.altitude.textContent =
       plane.altitude > 0
         ? `${Math.round(plane.altitude).toLocaleString("en")} ft${trend}`
         : "On ground";
-    field("speed").textContent =
-      `${Math.round(plane.speed)} kt · ${Math.round(plane.speed * 1.852)} km/h`;
-    field("distance").textContent =
-      `${distanceKm(airport.center, plane.position).toFixed(1)} km from ${airport.code}`;
+    fields.speed.textContent = `${Math.round(plane.speed)} kt · ${Math.round(plane.speed * 1.852)} km/h`;
+    fields.distance.textContent = `${distanceKm(airport.center, plane.position).toFixed(1)} km from ${airport.code}`;
     const heading = (Math.round(plane.heading) + 360) % 360;
-    field("heading").textContent =
-      `${heading}° ${COMPASS[Math.round(heading / 45) % 8]}`;
+    fields.heading.textContent = `${heading}° ${COMPASS[Math.round(heading / 45) % 8]}`;
   }
 
   function hide(): void {

@@ -1,4 +1,4 @@
-import type { Flight, ReplayFile } from "./types";
+import type { Flight, ReplayFile } from "../types/flight";
 
 /** Fetch a replay file. Handles .gz whether or not the server already decompressed it. */
 async function fetchReplayFile(url: string): Promise<ReplayFile> {

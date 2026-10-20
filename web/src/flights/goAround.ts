@@ -1,6 +1,6 @@
-import type { Airport } from "./airports";
-import { distanceKm } from "./replay";
-import type { Flight } from "./types";
+import type { Airport } from "../types/airport";
+import type { Flight } from "../types/flight";
+import { distanceKm } from "../utils/geo";
 
 const NEAR_KM = 10;
 const LOW_FT = 1000; // above the field

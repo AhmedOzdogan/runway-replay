@@ -1,10 +1,4 @@
-export interface Airport {
-  name: string;
-  /** [lon, lat] */
-  center: [number, number];
-  /** Field elevation in feet above sea level (ADS-B altitudes are above sea level too). */
-  elevationFt: number;
-}
+import type { Airport } from "../types/airport";
 
 export const AIRPORTS: Record<string, Airport> = {
   MUC: { name: "Munich", center: [11.7861, 48.3538], elevationFt: 1487 },
