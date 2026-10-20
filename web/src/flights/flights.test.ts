@@ -3,7 +3,7 @@ import type { Airport } from "../types/airport";
 import type { Flight, Point } from "../types/flight";
 import { fillMissingEnds } from "./estimate";
 import { findGoAround } from "./goAround";
-import { planeAt } from "./planes";
+import { findParkings, planeAt } from "./planes";
 import { classifyFlight, describeStatus } from "./status";
 
 const AIRPORT: Airport = {
@@ -110,5 +110,28 @@ describe("describeStatus", () => {
     expect(afterGoAround && describeStatus(afterGoAround, 310)).toBe(
       "GO AROUND!",
     );
+  });
+});
+
+describe("findParkings", () => {
+  // Both flights land; only how fast they're moving at their last point differs.
+  // At latitude 48.35, 0.0001° of longitude is about 7 m and 0.0042° about 310 m.
+
+  it("parks a plane whose data ends at taxi speed", () => {
+    const reachesGate = flightThrough([
+      [0, 11.7, 2000],
+      [60, 11.78, 0],
+      [70, 11.7801, 0], // ~7 m in 10 s ≈ 1 kt
+    ]);
+    expect(findParkings([reachesGate])).toHaveLength(1);
+  });
+
+  it("doesn't park a plane whose data ends at runway speed", () => {
+    const lostOnRunway = flightThrough([
+      [0, 11.7, 2000],
+      [60, 11.77, 0],
+      [70, 11.7742, 0], // ~310 m in 10 s ≈ 60 kt: the receiver lost it mid-rollout
+    ]);
+    expect(findParkings([lostOnRunway])).toHaveLength(0);
   });
 });

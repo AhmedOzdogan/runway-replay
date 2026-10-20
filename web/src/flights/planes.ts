@@ -11,6 +11,9 @@ import { degreesToRadians, distanceKm } from "../utils/geo";
 
 const SECONDS_PER_DAY = 86400;
 const KM_PER_NAUTICAL_MILE = 1.852;
+// Planes reach their gate at walking pace (under ~15 kt); data that ends faster than that
+// means the receiver lost the plane mid-rollout or taxi, so it isn't really parked there.
+const MAX_PARKING_SPEED_KNOTS = 15;
 
 /** A stretch of time an aircraft sits still on the ground between flights. */
 export interface Parking {
@@ -49,10 +52,6 @@ export function planeAt(flight: Flight, time: number): Plane | null {
   // 0 at the previous point, 1 at the next one.
   const progress =
     secondsBetween > 0 ? (time - previous[TIME]) / secondsBetween : 0;
-  const kmBetween = distanceKm(
-    [previous[LON], previous[LAT]],
-    [next[LON], next[LAT]],
-  );
   const between = (from: number, to: number) => from + (to - from) * progress;
 
   return {
@@ -63,16 +62,22 @@ export function planeAt(flight: Flight, time: number): Plane | null {
     ],
     heading: headingBetween(previous, next),
     altitude: between(previous[ALTITUDE], next[ALTITUDE]),
-    speed:
-      secondsBetween > 0
-        ? kmBetween / (secondsBetween / 3600) / KM_PER_NAUTICAL_MILE
-        : 0,
+    speed: speedKnotsBetween(previous, next),
     verticalRate:
       secondsBetween > 0
         ? ((next[ALTITUDE] - previous[ALTITUDE]) / secondsBetween) * 60
         : 0,
     parkedSince: null,
   };
+}
+
+function speedKnotsBetween(from: Point, to: Point): number {
+  const kmBetween = distanceKm([from[LON], from[LAT]], [to[LON], to[LAT]]);
+  const secondsBetween = to[TIME] - from[TIME];
+  if (secondsBetween <= 0) return 0;
+
+  const hoursBetween = secondsBetween / 3600;
+  return kmBetween / hoursBetween / KM_PER_NAUTICAL_MILE;
 }
 
 /**
@@ -97,6 +102,7 @@ export function findParkings(flights: Flight[]): Parking[] {
       const first = points[0];
       const last = points[points.length - 1];
       const nextFlight = aircraftFlights[index + 1];
+      const endSpeedKnots = speedKnotsBetween(points[points.length - 2], last);
       // Estimated takeoffs/landings start or end on the runway: don't park planes there.
       if (
         index === 0 &&
@@ -111,7 +117,11 @@ export function findParkings(flights: Flight[]): Parking[] {
           heading: headingBetween(first, points[1]),
         });
       }
-      if (last[ALTITUDE] === 0 && flight.estimatedAfter === undefined) {
+      if (
+        last[ALTITUDE] === 0 &&
+        flight.estimatedAfter === undefined &&
+        endSpeedKnots < MAX_PARKING_SPEED_KNOTS
+      ) {
         parkings.push({
           start: last[TIME],
           end: nextFlight?.points[0][TIME] ?? SECONDS_PER_DAY,
