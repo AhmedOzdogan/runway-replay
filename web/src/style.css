@@ -6,6 +6,7 @@
   --muted: #7d8799;
   --neon: #22d3ee;
   --neon-glow: 0 0 12px #22d3ee88;
+  --amber: #fbbf24;
   font:
     14px / 1.4 system-ui,
     sans-serif;
@@ -243,4 +244,46 @@ button[aria-pressed="true"] {
   gap: 8px;
   cursor: pointer;
   accent-color: var(--neon);
+}
+
+.banner {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  padding: 10px 22px;
+  border: 2px solid var(--amber);
+  border-radius: 999px;
+  background: #1a1408ee;
+  color: var(--amber);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 24px #fbbf2466;
+}
+
+.banner[hidden] {
+  display: none;
+}
+
+.banner.pop {
+  animation: pop 400ms ease-out;
+}
+
+@keyframes pop {
+  from {
+    transform: translateX(-50%) scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner.pop {
+    animation: none;
+  }
 }

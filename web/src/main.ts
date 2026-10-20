@@ -4,11 +4,13 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { AIRPORTS } from "./airports";
 import { createAirportPicker } from "./components/airportPicker";
+import { createBanner } from "./components/banner";
 import { createFlightCard } from "./components/flightCard";
 import { createTimeBar } from "./components/timeBar";
 import { loadFlights } from "./data";
 import { query } from "./dom";
 import { fillMissingEnds } from "./estimate";
+import { findGoAround } from "./goAround";
 import { createReplay } from "./replay";
 import type { Flight } from "./types";
 import "./style.css";
@@ -54,21 +56,32 @@ const flightCard = createFlightCard({
 document.body.append(flightCard.element);
 
 let lastSelectedFlight: Flight | null = null;
-const replay = createReplay(map, (icao, plane) => {
-  if (!icao) {
-    flightCard.hide();
-    following = false;
-    lastSelectedFlight = null;
-    return;
-  }
-  lastSelectedFlight = plane?.flight ?? lastSelectedFlight;
-  if (!lastSelectedFlight) return;
-  flightCard.update(lastSelectedFlight, plane, currentTime, {
-    code: currentAirport,
-    ...AIRPORTS[currentAirport],
-  });
-  if (following && plane) map.jumpTo({ center: plane.position });
-});
+const banner = createBanner();
+document.body.append(banner.element);
+
+const replay = createReplay(
+  map,
+  (icao, plane) => {
+    if (!icao) {
+      flightCard.hide();
+      following = false;
+      lastSelectedFlight = null;
+      return;
+    }
+    lastSelectedFlight = plane?.flight ?? lastSelectedFlight;
+    if (!lastSelectedFlight) return;
+    flightCard.update(lastSelectedFlight, plane, currentTime, {
+      code: currentAirport,
+      ...AIRPORTS[currentAirport],
+    });
+    if (following && plane) map.jumpTo({ center: plane.position });
+  },
+  (flight) =>
+    banner.show(
+      `GO AROUND! · ${flight.callsign ?? flight.icao.toUpperCase()} at ${currentAirport}`,
+      () => replay.select(flight.icao),
+    ),
+);
 
 async function showAirport(code: string): Promise<void> {
   currentAirport = code;
@@ -81,7 +94,12 @@ async function showAirport(code: string): Promise<void> {
   try {
     const { flights, sample } = await loadFlights(code, DATE);
     if (currentAirport !== code) return; // the user picked another airport meanwhile
-    replay.setFlights(fillMissingEnds(flights, AIRPORTS[code]));
+    // Detect go-arounds on the real data, before estimated landings are added.
+    const withGoArounds = flights.map((f) => {
+      const goAroundAt = findGoAround(f, AIRPORTS[code]);
+      return goAroundAt === undefined ? f : { ...f, goAroundAt };
+    });
+    replay.setFlights(fillMissingEnds(withGoArounds, AIRPORTS[code]));
     status.textContent = sample
       ? `No data for ${code} on ${DATE} yet${flights.length ? ", showing sample flights" : ""}`
       : `${flights.length} flights · ${DATE}`;

@@ -34,17 +34,32 @@ function flightKind(f: Flight): {
   return { kind: startsOnGround ? "ground" : "overflight", at: pts[0][0] };
 }
 
+function clockTime(t: number): string {
+  return new Date(t * 1000).toISOString().slice(11, 16);
+}
+
 function status(plane: Plane, time: number): string {
   if (plane.parkedSince !== null) {
     return plane.parkedSince === 0
       ? "Parked"
       : `Parked · ${duration(time - plane.parkedSince)}`;
   }
+  const goAround = plane.flight.goAroundAt;
+  if (goAround !== undefined && time >= goAround && time < goAround + 90)
+    return "GO AROUND!";
+  const wentAround =
+    goAround !== undefined && time >= goAround
+      ? `Went around at ${clockTime(goAround)} · `
+      : "";
+
   const { kind, at } = flightKind(plane.flight);
   if (kind === "arrival") {
-    return time < at
-      ? `On approach · lands in ${duration(at - time)}`
-      : `Landed ${duration(time - at)} ago · taxiing`;
+    // Don't count down to a landing that comes after a go-around the plane hasn't flown yet.
+    if (goAround !== undefined && time < goAround) return "On approach";
+    if (time >= at) return `Landed ${duration(time - at)} ago · taxiing`;
+    return wentAround
+      ? `${wentAround}lands in ${duration(at - time)}`
+      : `On approach · lands in ${duration(at - time)}`;
   }
   if (kind === "departure") {
     return time < at
@@ -52,6 +67,8 @@ function status(plane: Plane, time: number): string {
       : `Took off ${duration(time - at)} ago`;
   }
   if (kind === "ground") return "Taxiing";
+  if (goAround !== undefined && time < goAround) return "On approach";
+  if (wentAround) return `${wentAround}climbing away`;
   return plane.verticalRate > 300
     ? "Passing by · climbing"
     : plane.verticalRate < -300

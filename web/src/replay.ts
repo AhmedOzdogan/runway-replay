@@ -9,6 +9,8 @@ const TRAIL_SECONDS = 300;
 const NEON: [number, number, number] = [34, 211, 238];
 const WHITE: [number, number, number] = [255, 255, 255];
 const PARKED_GREY: [number, number, number] = [110, 122, 140];
+const AMBER: [number, number, number] = [251, 191, 36];
+const GO_AROUND_HIGHLIGHT_S = 180;
 
 // Top-down airplane pointing north; `mask` lets deck.gl tint it with getColor.
 const PLANE_ICON = {
@@ -133,6 +135,7 @@ function findParkings(flights: Flight[]): Parking[] {
 export function createReplay(
   map: MapLibreMap,
   onSelection: (icao: string | null, plane: Plane | null) => void,
+  onGoAround: (flight: Flight) => void,
 ): {
   setFlights: (flights: Flight[]) => void;
   setTime: (time: number) => void;
@@ -170,6 +173,7 @@ export function createReplay(
   let parkings: Parking[] = [];
   let time = 0;
   let selected: string | null = null;
+  let goArounds: Flight[] = [];
 
   // deck.gl only re-reads the trail accessors when `data` changes; per-frame updates just move
   // currentTime. Planes are recomputed every frame (cheap: a binary search per flight).
@@ -224,11 +228,21 @@ export function createReplay(
               ? NEON
               : p.parkedSince !== null
                 ? PARKED_GREY
-                : WHITE,
+                : isGoingAround(p.flight)
+                  ? AMBER
+                  : WHITE,
         }),
       ],
     });
     if (selected) onSelection(selected, selectedPlane);
+  }
+
+  function isGoingAround(f: Flight): boolean {
+    return (
+      f.goAroundAt !== undefined &&
+      time >= f.goAroundAt &&
+      time < f.goAroundAt + GO_AROUND_HIGHLIGHT_S
+    );
   }
 
   function select(icao: string | null): void {
@@ -242,10 +256,21 @@ export function createReplay(
     setFlights(next) {
       flights = next;
       parkings = findParkings(next);
+      goArounds = next.filter((f) => f.goAroundAt !== undefined);
       select(null);
       render();
     },
     setTime(next) {
+      // Announce go-arounds the replay plays through (not ones skipped over with the slider).
+      if (next > time && next - time < 120) {
+        for (const f of goArounds) {
+          if (
+            (f.goAroundAt as number) > time &&
+            (f.goAroundAt as number) <= next
+          )
+            onGoAround(f);
+        }
+      }
       time = next;
       render();
     },

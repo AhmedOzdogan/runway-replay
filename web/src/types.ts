@@ -14,6 +14,8 @@ export interface Flight {
   estimatedBefore?: number;
   /** Added in the browser (estimate.ts), not in the file: points after this time are estimated. */
   estimatedAfter?: number;
+  /** Added in the browser (goAround.ts), not in the file: time of a go-around, if there was one. */
+  goAroundAt?: number;
 }
 
 export interface ReplayFile {
