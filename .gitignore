@@ -24,3 +24,4 @@ web/public/data/*.json.gz
 
 # Local AI assistant notes
 CLAUDE.md
+.claude/*
