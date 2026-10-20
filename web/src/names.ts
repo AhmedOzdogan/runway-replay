@@ -27,6 +27,7 @@ export const AIRLINES: Record<string, string> = {
   KAL: "Korean Air",
   KLM: "KLM",
   LOT: "LOT Polish",
+  OCN: "Discover Airlines",
   PGT: "Pegasus",
   QTR: "Qatar Airways",
   RYR: "Ryanair",
