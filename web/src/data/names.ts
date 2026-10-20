@@ -5,7 +5,6 @@
 export const AIRLINES: Record<string, string> = {
   AEE: "Aegean",
   AFR: "Air France",
-  AJA: "AJet",
   AUA: "Austrian",
   BAV: "Bamboo Airways",
   BAW: "British Airways",
@@ -36,6 +35,7 @@ export const AIRLINES: Record<string, string> = {
   SWR: "Swiss",
   SXS: "SunExpress",
   TAP: "TAP Air Portugal",
+  TKJ: "AJet",
   THA: "Thai Airways",
   THY: "Turkish Airlines",
   UAE: "Emirates",
@@ -78,3 +78,97 @@ export const AIRCRAFT_TYPES: Record<string, string> = {
   E195: "Embraer E195",
   E295: "Embraer E195-E2",
 };
+
+/**
+ * ICAO airline code -> the airline's radio name ("telephony designator"), what pilots and ATC
+ * actually say. Often not the airline's name: British Airways is "Speedbird".
+ * Checked against each airline's Wikipedia infobox ("Call sign"). To add more, use that field
+ * or the "Telephony" column of Wikipedia's "List of airline codes".
+ */
+export const AIRLINE_RADIO_NAMES: Record<string, string> = {
+  AEE: "Aegean",
+  AFR: "Airfrans",
+  AUA: "Austrian",
+  BAV: "Bamboo",
+  BAW: "Speedbird",
+  CCA: "Air China",
+  CES: "China Eastern",
+  CFG: "Condor",
+  CLH: "Hansaline",
+  CPA: "Cathay",
+  CSN: "China Southern",
+  DAL: "Delta",
+  DLA: "Dolomiti",
+  DLH: "Lufthansa",
+  ETD: "Etihad",
+  EWG: "Eurowings",
+  EZY: "Easy",
+  FIN: "Finnair",
+  HVN: "Viet Nam Airlines",
+  IBE: "Iberia",
+  ITY: "Itarrow",
+  KAL: "Korean Air",
+  KLM: "KLM",
+  LOT: "LOT",
+  OCN: "Ocean", // Discover Airlines
+  PGT: "Sunturk",
+  QTR: "Qatari",
+  RYR: "Ryanair",
+  SAS: "Scandinavian",
+  SIA: "Singapore",
+  SWR: "Swiss",
+  SXS: "Sunexpress",
+  TAP: "Air Portugal",
+  THA: "Thai",
+  THY: "Turkish",
+  TKJ: "Anatolia", // AJet
+  UAE: "Emirates",
+  UAL: "United",
+  VJC: "Vietjet",
+  VLG: "Vueling",
+  WZZ: "Wizz Air",
+};
+
+/** ICAO spelling alphabet, as used on the radio ("alfa" and "juliett" are the official spellings). */
+export const NATO_ALPHABET: Record<string, string> = {
+  A: "alfa",
+  B: "bravo",
+  C: "charlie",
+  D: "delta",
+  E: "echo",
+  F: "foxtrot",
+  G: "golf",
+  H: "hotel",
+  I: "india",
+  J: "juliett",
+  K: "kilo",
+  L: "lima",
+  M: "mike",
+  N: "november",
+  O: "oscar",
+  P: "papa",
+  Q: "quebec",
+  R: "romeo",
+  S: "sierra",
+  T: "tango",
+  U: "uniform",
+  V: "victor",
+  W: "whiskey",
+  X: "x-ray",
+  Y: "yankee",
+  Z: "zulu",
+};
+
+/** Digits 0–9 as spoken on the radio; 9 is "niner" so it can't be mistaken for "nein" or "five". */
+export const SPOKEN_DIGITS = [
+  "zero",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "niner",
+];
