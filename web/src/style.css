@@ -1,0 +1,246 @@
+:root {
+  --bg: #0b0e14;
+  --panel: #11161f;
+  --line: #1f2733;
+  --text: #d7deea;
+  --muted: #7d8799;
+  --neon: #22d3ee;
+  --neon-glow: 0 0 12px #22d3ee88;
+  font:
+    14px / 1.4 system-ui,
+    sans-serif;
+  color: var(--text);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#map {
+  flex: 1;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--panel);
+}
+
+header.bar {
+  border-bottom: 1px solid var(--line);
+}
+
+footer.bar {
+  border-top: 1px solid var(--line);
+}
+
+.brand {
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+.brand b {
+  color: var(--neon);
+  text-shadow: var(--neon-glow);
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--muted);
+}
+
+button[aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--neon);
+  border-color: var(--neon);
+  box-shadow: var(--neon-glow);
+}
+
+.airport-picker,
+.speeds {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.play {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-color: var(--neon);
+  color: var(--neon);
+}
+
+.clock {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.clock output {
+  font-size: 18px;
+  color: var(--text);
+}
+
+.time-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.time-bar input[type="range"] {
+  cursor: pointer;
+  flex: 1;
+  min-width: 160px;
+  accent-color: var(--neon);
+}
+
+.credit {
+  color: var(--muted);
+}
+
+.credit a {
+  color: inherit;
+}
+
+.airport-marker {
+  padding: 2px 8px;
+  border: 1px solid var(--neon);
+  border-radius: 999px;
+  background: #0b0e14cc;
+  color: var(--neon);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  box-shadow: var(--neon-glow);
+  pointer-events: none;
+}
+
+.status {
+  order: 1;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.flight-card {
+  position: fixed;
+  top: 72px;
+  right: 16px;
+  z-index: 10;
+  width: min(300px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #11161fee;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 30px #0008;
+}
+
+.flight-card[hidden] {
+  display: none;
+}
+
+.flight-card .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.flight-card .callsign {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--neon);
+  text-shadow: var(--neon-glow);
+}
+
+.flight-card .airline {
+  color: var(--muted);
+  min-height: 1.4em;
+}
+
+.flight-card .status {
+  display: inline-block;
+  margin: 10px 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #22d3ee1a;
+  color: var(--neon);
+  font-size: 13px;
+}
+
+.flight-card .route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.flight-card .arrow {
+  flex: 1;
+  margin: 0 10px;
+  border-bottom: 1px dashed var(--line);
+  line-height: 0.1;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.flight-card dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin: 14px 0;
+}
+
+.flight-card dt {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.flight-card dd {
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.flight-card .follow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  accent-color: var(--neon);
+}
