@@ -11,4 +11,4 @@ Closes #
 ## Checklist
 
 - [ ] `ruff check`, `ruff format --check` and `pytest` pass (pipeline changes)
-- [ ] `npm run lint` and `npm run build` pass (web changes)
+- [ ] `npm run lint`, `npm test` and `npm run build` pass (web changes)
