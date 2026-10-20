@@ -72,3 +72,19 @@ export function spokenHeading(heading: number): string {
   const degrees = (Math.round(heading) + 360) % 360 || 360;
   return spellOut(String(degrees).padStart(3, "0"));
 }
+
+/** "Hello {name}" + { name: "Ada" } -> "Hello Ada". Unknown placeholders become "". */
+export function fillTemplate(
+  template: string,
+  values: Record<string, string>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_match, key) => values[key] ?? "");
+}
+
+export function stableIndex(seed: string, count: number): number {
+  let hash: number = 0;
+  for (const char of seed) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+  return hash % count;
+}

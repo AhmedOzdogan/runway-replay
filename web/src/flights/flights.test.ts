@@ -5,11 +5,13 @@ import { fillMissingEnds } from "./estimate";
 import { findGoAround } from "./goAround";
 import { findParkings, planeAt } from "./planes";
 import {
+  fillTemplate,
   runwayFromHeading,
   spellOut,
   spokenAltitude,
   spokenCallsign,
   spokenHeading,
+  stableIndex,
 } from "./radio";
 import { classifyFlight, describeStatus } from "./status";
 import { isGroundVehicle } from "./vehicle";
@@ -289,5 +291,69 @@ describe("spokenHeading", () => {
 
   it("calls north three six zero, never zero zero zero", () => {
     expect(spokenHeading(0)).toBe("three six zero");
+  });
+});
+
+describe("fillTemplate", () => {
+  it("fills every placeholder", () => {
+    expect(fillTemplate("{a} and {b}", { a: "1", b: "2" })).toBe("1 and 2");
+  });
+
+  it("ignores values the template doesn't use", () => {
+    expect(fillTemplate("{a}", { a: "1", b: "2" })).toBe("1");
+  });
+
+  it("fills the same placeholder twice", () => {
+    expect(fillTemplate("{a}-{a}", { a: "x" })).toBe("x-x");
+  });
+
+  it("leaves no 'undefined' for unknown placeholders", () => {
+    expect(fillTemplate("Hi {missing}", {})).toBe("Hi ");
+  });
+});
+
+describe("stableIndex", () => {
+  it("gives the same index for the same seed", () => {
+    expect(stableIndex("abc123-approach", 5)).toBe(
+      stableIndex("abc123-approach", 5),
+    );
+  });
+
+  it("always stays within 0 … count - 1", () => {
+    for (const seed of [
+      "a",
+      "abc123-approach",
+      "4ca7b5-takeoff",
+      "x".repeat(50),
+    ]) {
+      const index = stableIndex(seed, 4);
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(index).toBeLessThan(4);
+    }
+  });
+
+  // The whole point: different flights should get different variants.
+  // A lazy `return 0` passes the two tests above but fails these.
+  it("spreads different flights over every variant", () => {
+    const indexes = new Set<number>();
+    for (let flight = 0; flight < 200; flight++) {
+      indexes.add(stableIndex(`flight${flight}-approach`, 5));
+    }
+    expect(indexes.size).toBe(5);
+  });
+
+  it("can give different variants for different phases of the same flight", () => {
+    const phases = [
+      "approach",
+      "clearedToLand",
+      "afterLanding",
+      "taxiOut",
+      "takeoff",
+      "goAround",
+    ];
+    const indexes = new Set(
+      phases.map((phase) => stableIndex(`abc123-${phase}`, 4)),
+    );
+    expect(indexes.size).toBeGreaterThan(1);
   });
 });
