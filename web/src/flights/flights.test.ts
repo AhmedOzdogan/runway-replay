@@ -4,6 +4,13 @@ import type { Flight, Point } from "../types/flight";
 import { fillMissingEnds } from "./estimate";
 import { findGoAround } from "./goAround";
 import { findParkings, planeAt } from "./planes";
+import {
+  runwayFromHeading,
+  spellOut,
+  spokenAltitude,
+  spokenCallsign,
+  spokenHeading,
+} from "./radio";
 import { classifyFlight, describeStatus } from "./status";
 import { isGroundVehicle } from "./vehicle";
 
@@ -162,5 +169,125 @@ describe("isGroundVehicle", () => {
       type: "A320",
     };
     expect(isGroundVehicle(condor)).toBe(false);
+  });
+});
+
+describe("spokenCallsign", () => {
+  it("spells letters with the radio alphabet and digits as words", () => {
+    expect(spokenCallsign("ABC1")).toBe("alfa bravo charlie one");
+    expect(spokenCallsign("BAV1")).toBe("Bamboo one");
+  });
+
+  it("says the airline's radio name, then spells the rest", () => {
+    expect(spokenCallsign("DLH4AB")).toBe("Lufthansa four alfa bravo");
+  });
+
+  it("uses the radio name even when it differs from the airline, and says 9 as niner", () => {
+    expect(spokenCallsign("BAW92")).toBe("Speedbird niner two");
+  });
+
+  it("spells everything when the airline is unknown", () => {
+    expect(spokenCallsign("ELEKT04")).toBe(
+      "echo lima echo kilo tango zero four",
+    );
+  });
+
+  it("skips characters that aren't letters or digits", () => {
+    expect(spokenCallsign("D-AIBD")).toBe("delta alfa india bravo delta");
+  });
+
+  it("works with lowercase input", () => {
+    expect(spokenCallsign("dlh4ab")).toBe("Lufthansa four alfa bravo");
+  });
+
+  it("has no trailing space when there's nothing after the airline", () => {
+    expect(spokenCallsign("DLH")).toBe("Lufthansa");
+  });
+});
+
+describe("spellOut", () => {
+  it("spells letters and digits, skipping everything else", () => {
+    expect(spellOut("4A-B 9")).toBe("four alfa bravo niner");
+  });
+});
+
+describe("runwayFromHeading", () => {
+  it("spells the runway after its direction", () => {
+    expect(runwayFromHeading(290)).toBe("two niner");
+    expect(runwayFromHeading(123)).toBe("one two");
+    expect(runwayFromHeading(360)).toBe("three six");
+    expect(runwayFromHeading(80)).toBe("zero eight");
+  });
+
+  it("calls north runway three six, never zero zero", () => {
+    expect(runwayFromHeading(4)).toBe("three six");
+  });
+
+  it("rounds the heading to the nearest runway", () => {
+    expect(runwayFromHeading(135)).toBe("one four");
+    expect(runwayFromHeading(357)).toBe("three six");
+  });
+});
+
+describe("spokenAltitude", () => {
+  it("spells the altitude", () => {
+    expect(spokenAltitude(1000)).toBe("one thousand feet");
+    expect(spokenAltitude(5000)).toBe("five thousand feet");
+    expect(spokenAltitude(9500)).toBe("niner thousand five hundred feet");
+    expect(spokenAltitude(10000)).toBe("flight level one zero zero");
+    expect(spokenAltitude(12000)).toBe("flight level one two zero");
+    expect(spokenAltitude(31000)).toBe("flight level three one zero");
+  });
+
+  it("rounds real, uneven altitudes to the nearest hundred feet", () => {
+    expect(spokenAltitude(2633)).toBe("two thousand six hundred feet");
+    expect(spokenAltitude(2050)).toBe("two thousand one hundred feet");
+  });
+
+  it("leaves out the thousands below 1000 ft", () => {
+    expect(spokenAltitude(800)).toBe("eight hundred feet");
+  });
+
+  it("decides on the rounded value, so rounding never says zero hundred", () => {
+    expect(spokenAltitude(2030)).toBe("two thousand feet");
+    expect(spokenAltitude(2970)).toBe("three thousand feet");
+    expect(spokenAltitude(950)).toBe("one thousand feet");
+  });
+
+  it("switches to a flight level when the rounded value reaches the transition altitude", () => {
+    expect(spokenAltitude(9960)).toBe("flight level one zero zero");
+  });
+
+  it("says ground level for altitudes that round to zero", () => {
+    expect(spokenAltitude(40)).toBe("ground level");
+  });
+
+  it("rounds flight levels to the nearest hundred feet", () => {
+    expect(spokenAltitude(14750)).toBe("flight level one four eight");
+  });
+});
+describe("spokenHeading", () => {
+  it("spells the heading", () => {
+    expect(spokenHeading(82)).toBe("zero eight two");
+    expect(spokenHeading(123)).toBe("one two three");
+    expect(spokenHeading(200)).toBe("two zero zero");
+    expect(spokenHeading(300)).toBe("three zero zero");
+    expect(spokenHeading(360)).toBe("three six zero");
+  });
+
+  it("rounds headings with decimals", () => {
+    expect(spokenHeading(81.7)).toBe("zero eight two");
+  });
+
+  it("turns negative headings into 0–360", () => {
+    expect(spokenHeading(-98)).toBe("two six two");
+  });
+
+  it("rounds before deciding on north", () => {
+    expect(spokenHeading(0.3)).toBe("three six zero");
+  });
+
+  it("calls north three six zero, never zero zero zero", () => {
+    expect(spokenHeading(0)).toBe("three six zero");
   });
 });
