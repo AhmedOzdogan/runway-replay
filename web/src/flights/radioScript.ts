@@ -4,7 +4,7 @@ import {
   type Speaker,
 } from "../data/radioPhrases";
 import type { Airport } from "../types/airport";
-import { type Flight, TIME } from "../types/flight";
+import { ALTITUDE, type Flight, TIME } from "../types/flight";
 import { planeAt } from "./planes";
 import {
   fillTemplate,
@@ -31,6 +31,10 @@ const CLEARED_FOR_TAKEOFF_SECONDS_BEFORE = 60;
 const AFTER_TAKEOFF_SECONDS = 45;
 /** Only a plane on the ground this long before lift-off gets a taxi call (not one seen first mid-roll). */
 const MIN_TAXI_SECONDS = 120;
+/** After a go-around, when ATC starts vectoring the plane back for another approach. */
+const REAPPROACH_SECONDS_AFTER_GO_AROUND = 180;
+/** How far ahead to look for the altitude a plane climbs to after going around. */
+const GO_AROUND_CLIMB_WINDOW_SECONDS = 240;
 /** Never start the next exchange before the previous one has had time to finish. */
 const MIN_SECONDS_BETWEEN_PHASES = 30;
 
@@ -51,38 +55,87 @@ export function radioScript(
   seed = SESSION_SEED,
 ): RadioLine[] {
   const { kind, eventTime } = classifyFlight(flight);
-  const phases = phasesFor(kind, flight.points[0][TIME], eventTime);
+  const phases = phasesFor(
+    kind,
+    flight.points[0][TIME],
+    eventTime,
+    flight.goAroundAt,
+  );
 
+  // Count repeats (e.g. a second approach after a go-around) so each gets a different variant.
+  const occurrences = new Map<RadioPhase, number>();
   return phases
-    .flatMap(([phase, time]) =>
-      linesForPhase(flight, airport, seed, phase, time, eventTime),
-    )
+    .flatMap(([phase, time]) => {
+      const occurrence = occurrences.get(phase) ?? 0;
+      occurrences.set(phase, occurrence + 1);
+      return linesForPhase(
+        flight,
+        airport,
+        seed,
+        phase,
+        time,
+        eventTime,
+        occurrence,
+      );
+    })
     .sort((a, b) => a.time - b.time);
 }
 
 /**
  * When each radio exchange happens. `eventTime` is touchdown for arrivals and lift-off for
- * departures (see classifyFlight).
+ * departures (see classifyFlight). `goAroundAt` is set when an approach was aborted.
  */
 function phasesFor(
   kind: FlightKind,
   firstContact: number,
   eventTime: number,
+  goAroundAt?: number,
 ): [RadioPhase, number][] {
   const notBefore = (earliest: number, time: number) =>
     Math.max(earliest, time);
 
+  // An approach that ends at `endTime`: first contact, then cleared to land 90 s before.
+  const approachTo = (endTime: number): [RadioPhase, number][] => [
+    ["approach", firstContact],
+    [
+      "clearedToLand",
+      notBefore(
+        firstContact + MIN_SECONDS_BETWEEN_PHASES,
+        endTime - CLEARED_TO_LAND_SECONDS_BEFORE,
+      ),
+    ],
+  ];
+
+  // Went around: the first approach, the go-around call, and (if it lands later) vectors back.
+  if (
+    goAroundAt !== undefined &&
+    (kind === "arrival" || kind === "overflight")
+  ) {
+    const firstAttempt: [RadioPhase, number][] = [
+      ...approachTo(goAroundAt),
+      ["goAround", goAroundAt],
+    ];
+    if (kind !== "arrival") return firstAttempt; // data ends before it lands again
+
+    const reapproach = goAroundAt + REAPPROACH_SECONDS_AFTER_GO_AROUND;
+    return [
+      ...firstAttempt,
+      ["approach", reapproach],
+      [
+        "clearedToLand",
+        notBefore(
+          reapproach + MIN_SECONDS_BETWEEN_PHASES,
+          eventTime - CLEARED_TO_LAND_SECONDS_BEFORE,
+        ),
+      ],
+      ["afterLanding", eventTime + AFTER_LANDING_SECONDS],
+    ];
+  }
+
   switch (kind) {
     case "arrival":
       return [
-        ["approach", firstContact],
-        [
-          "clearedToLand",
-          notBefore(
-            firstContact + MIN_SECONDS_BETWEEN_PHASES,
-            eventTime - CLEARED_TO_LAND_SECONDS_BEFORE,
-          ),
-        ],
+        ...approachTo(eventTime),
         ["afterLanding", eventTime + AFTER_LANDING_SECONDS],
       ];
     case "departure": {
@@ -118,6 +171,7 @@ function linesForPhase(
   phase: RadioPhase,
   time: number,
   eventTime: number,
+  occurrence: number,
 ): RadioLine[] {
   // planeAt() is null outside the data, and e.g. touchdown + 20 s can be past the last point:
   // describe the plane as it was at its nearest known moment instead.
@@ -137,19 +191,40 @@ function linesForPhase(
     ),
     airport: airport.name,
     runway: runwayFromHeading(planeAtRunway.heading),
-    altitude: spokenAltitude(plane.altitude),
+    // After a go-around ATC gives the altitude to climb *to*, not the low point it's at.
+    altitude: spokenAltitude(
+      phase === "goAround"
+        ? goAroundClimbAltitude(flight, time)
+        : plane.altitude,
+    ),
     heading: spokenHeading(plane.heading),
   };
 
   const exchanges = RADIO_EXCHANGES[phase];
-  const exchange =
-    exchanges[stableIndex(`${seed}-${flight.icao}-${phase}`, exchanges.length)];
+  // Stable per flight and phase; the second time a phase happens takes the next variant, so a
+  // second approach after a go-around never repeats the first one word for word.
+  const variant =
+    (stableIndex(`${seed}-${flight.icao}-${phase}`, exchanges.length) +
+      occurrence) %
+    exchanges.length;
+  const exchange = exchanges[variant];
 
   return exchange.map((phrase, index) => ({
     time: time + index * LINE_GAP_SECONDS,
     speaker: phrase.speaker,
     text: fillTemplate(phrase.text, values),
   }));
+}
+
+/** The altitude a plane climbs to after going around: its highest point soon after, to 1000 ft. */
+function goAroundClimbAltitude(flight: Flight, goAroundAt: number): number {
+  const climbOut = flight.points.filter(
+    (point) =>
+      point[TIME] >= goAroundAt &&
+      point[TIME] <= goAroundAt + GO_AROUND_CLIMB_WINDOW_SECONDS,
+  );
+  const highest = Math.max(0, ...climbOut.map((point) => point[ALTITUDE]));
+  return Math.round(highest / 1000) * 1000;
 }
 
 /** How long after a line starts we treat the radio as busy (roughly the time to say it). */

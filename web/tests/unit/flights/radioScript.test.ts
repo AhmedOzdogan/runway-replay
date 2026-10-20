@@ -109,6 +109,59 @@ describe("radioScript for a departure", () => {
   });
 });
 
+// Descends, goes around at 300 s (lowest 1650 ft), climbs to ~5000 ft, lands at 1200 s.
+const goAround = {
+  ...flightThrough([
+    [0, 11.6, 6000],
+    [300, 11.76, 1650],
+    [420, 11.9, 4900],
+    [600, 12.0, 5000],
+    [1000, 11.7, 3000],
+    [1140, 11.77, 1600],
+    [1200, 11.78, 0],
+    [1240, 11.785, 0],
+  ]),
+  goAroundAt: 300,
+};
+
+describe("radioScript for a go-around", () => {
+  const lines = radioScript(goAround, AIRPORT, SEED);
+  const goAroundLine = lines.find((line) => /go(ing)? around/i.test(line.text));
+
+  it("has a go-around call at the go-around", () => {
+    expect(goAroundLine?.time).toBe(300);
+  });
+
+  it("clears the plane to land twice: before the go-around and before the real landing", () => {
+    const cleared = lines.filter((line) => /cleared to land/i.test(line.text));
+    expect(cleared.some((line) => line.time < 300)).toBe(true);
+    expect(cleared.some((line) => line.time > 300 && line.time < 1200)).toBe(
+      true,
+    );
+  });
+
+  it("climbs to where the plane really went, not its lowest point", () => {
+    const climb = lines.find((line) => /climb to/i.test(line.text));
+    if (climb) expect(climb.text).toContain("five thousand feet");
+  });
+
+  it("still lands and vacates at the end", () => {
+    expect(lines.at(-1)?.time).toBeGreaterThan(1200);
+  });
+
+  it("uses a different exchange for the second cleared-to-land", () => {
+    // First one starts 90 s before the go-around, second one 90 s before touchdown.
+    const exchangeFrom = (start: number) =>
+      lines
+        .filter((line) => line.time >= start && line.time < start + 30)
+        .map((line) => line.text)
+        .join(" ");
+    expect(exchangeFrom(210)).not.toBe("");
+    expect(exchangeFrom(1110)).not.toBe("");
+    expect(exchangeFrom(210)).not.toBe(exchangeFrom(1110));
+  });
+});
+
 describe("radioScript for other flights", () => {
   it("is silent for an overflight, for now", () => {
     const overflight = flightThrough([
