@@ -32,8 +32,8 @@ Each point:
 ```
 
 `details` appears only on some points and holds `flight` (callsign, with trailing spaces),
-`squawk`, `emergency` and `category`. One file covers the aircraft's whole day (often several
-flights), about 3.6 s between points.
+`squawk`, `emergency` and `category` (the ADS-B emitter category, see the output section).
+One file covers the aircraft's whole day (often several flights), about 3.6 s between points.
 
 Don't use the live API (`api.adsb.lol`) in V1: it's rate-limited (4/s, 60/min, 500/day) and
 sends no CORS headers, so a browser can't call it.
@@ -54,6 +54,7 @@ example: `web/public/data/sample.json`).
       "registration": "D-AIBD",
       "type": "A319",
       "callsign": "DLH4AB",
+      "category": "A3",
       "points": [[28800, 11.45, 48.30, 6000], ...]
     }
   ]
@@ -72,4 +73,8 @@ example: `web/public/data/sample.json`).
 - Resampled to at most one point per 5 s; coordinates rounded to 4 decimals (≈ 11 m), altitude
   to whole feet.
 - `callsign` is the latest callsign seen for that flight (trimmed), or `null`.
+- `category` is the latest ADS-B emitter category seen for that flight, or `null` (many
+  transmitters never send one). `A1`–`A7` are aircraft, from light (`A1`) to heavy (`A5`) and
+  rotorcraft (`A7`); `C1` is a ground emergency vehicle and `C2` a ground service vehicle, e.g. the
+  `ELEKT…` vehicles that drive Munich's runways at night.
 - Ground speed isn't stored; derive it from consecutive points if needed.

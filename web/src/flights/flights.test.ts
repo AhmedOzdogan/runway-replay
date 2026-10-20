@@ -21,6 +21,7 @@ function flightThrough(
     registration: "D-TEST",
     type: "A320",
     callsign: "TST1",
+    category: "A3",
     points: points.map(
       ([time, lon, altitude]): Point => [time, lon, 48.35, altitude],
     ),

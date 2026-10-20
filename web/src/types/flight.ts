@@ -15,6 +15,7 @@ export interface Flight {
   registration: string | null;
   type: string | null;
   callsign: string | null;
+  category: string | null;
   points: Point[];
   /** Added in the browser (flights/estimate.ts), not in the file: points before this time are estimated. */
   estimatedBefore?: number;

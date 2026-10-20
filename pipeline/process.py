@@ -38,6 +38,8 @@ def flights_near(trace: dict, airport: tuple[float, float], day_start: int) -> l
                 # ponytail: callsign of the last point, i.e. the latest seen; right for arrivals
                 # and departures, can be stale if a flight never re-broadcasts it in the zone.
                 "callsign": flight_points[-1][4],
+                # Latest ADS-B emitter category seen, e.g. "A3" (airliner) or "C2" (ground vehicle).
+                "category": flight_points[-1][5],
                 "points": resample(flight_points),
             }
         )

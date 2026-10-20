@@ -4,10 +4,14 @@ from resample import resample, split_flights
 MUC = (48.3538, 11.7861)
 
 
-def trace_point(time, lat, lon, altitude, ground_speed=150, callsign=None):
+def trace_point(time, lat, lon, altitude, ground_speed=150, callsign=None, category=None):
     """A raw adsb.lol trace point; adsb.lol pads callsigns with spaces."""
-    details = {"flight": f"{callsign}   "} if callsign else None
-    return [time, lat, lon, altitude, ground_speed, 0, 0, 0, details]
+    details = {}
+    if callsign:
+        details["flight"] = f"{callsign}   "
+    if category:
+        details["category"] = category
+    return [time, lat, lon, altitude, ground_speed, 0, 0, 0, details or None]
 
 
 def test_filter_keeps_only_points_in_zone():
@@ -19,8 +23,8 @@ def test_filter_keeps_only_points_in_zone():
         trace_point(40, 48.35, 11.79, "ground", ground_speed=0),  # parked
     ]
     assert filter_points(points, MUC) == [
-        [0, 11.78, 48.35, 3000, "DLH1AB"],
-        [30, 11.79, 48.35, 0, "DLH1AB"],
+        [0, 11.78, 48.35, 3000, "DLH1AB", None],
+        [30, 11.79, 48.35, 0, "DLH1AB", None],
     ]
 
 
@@ -34,3 +38,8 @@ def test_split_and_resample():
         [5, 11.7812, 48.3512, 1000],
         [11, 11.7812, 48.3512, 1000],
     ]
+
+
+def test_filter_remembers_the_category():
+    points = [trace_point(0, 48.35, 11.78, "ground", ground_speed=10, category="C2")]
+    assert filter_points(points, MUC)[0][-1] == "C2"

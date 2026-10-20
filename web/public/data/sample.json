@@ -8,6 +8,7 @@
       "registration": "D-AIBD",
       "type": "A319",
       "callsign": "DLH4AB",
+      "category": "A3",
       "points": [
         [28800, 11.45, 48.3, 6000],
         [28860, 11.53, 48.32, 4500],
@@ -21,6 +22,7 @@
       "registration": "EI-DWF",
       "type": "B738",
       "callsign": "RYR12QK",
+      "category": "A3",
       "points": [
         [28900, 11.8, 48.36, 0],
         [28960, 11.88, 48.37, 1500],
@@ -34,6 +36,7 @@
       "registration": "OE-IJO",
       "type": "A320",
       "callsign": "EZY18FP",
+      "category": "A3",
       "points": [
         [29000, 12.15, 48.4, 9000],
         [29060, 12.05, 48.38, 6500],
