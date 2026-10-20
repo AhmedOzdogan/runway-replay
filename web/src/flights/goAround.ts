@@ -1,11 +1,11 @@
 import type { Airport } from "../types/airport";
-import type { Flight } from "../types/flight";
+import { ALTITUDE, type Flight, LAT, LON, TIME } from "../types/flight";
 import { distanceKm } from "../utils/geo";
 
-const NEAR_KM = 10;
-const LOW_FT = 1000; // above the field
-const DESCENDED_FT = 1500; // must have come down at least this much first (rules out departures)
-const CLIMB_FT = 1000; // then climb at least this much without touching the ground
+const MAX_DISTANCE_KM = 10;
+const MAX_HEIGHT_ABOVE_FIELD_FT = 1000;
+const MIN_DESCENT_FT = 1500; // must have come down at least this much first (rules out departures)
+const MIN_CLIMB_FT = 1000; // then climb at least this much without touching the ground
 
 /**
  * Time of the lowest point of a go-around (aborted landing), or undefined if there was none:
@@ -15,22 +15,32 @@ export function findGoAround(
   flight: Flight,
   airport: Airport,
 ): number | undefined {
-  const pts = flight.points;
-  let highest = 0;
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i];
-    if (p[3] === 0) return undefined; // landed first
-    highest = Math.max(highest, p[3]);
-    const low =
-      p[3] - airport.elevationFt < LOW_FT &&
-      highest > p[3] + DESCENDED_FT &&
-      distanceKm(airport.center, [p[1], p[2]]) < NEAR_KM;
-    if (!low) continue;
+  const points = flight.points;
+  let highestAltitude = 0;
+
+  for (let index = 0; index < points.length; index++) {
+    const point = points[index];
+    if (point[ALTITUDE] === 0) return undefined; // landed first
+    highestAltitude = Math.max(highestAltitude, point[ALTITUDE]);
+
+    const isLowOnApproach =
+      point[ALTITUDE] - airport.elevationFt < MAX_HEIGHT_ABOVE_FIELD_FT &&
+      highestAltitude > point[ALTITUDE] + MIN_DESCENT_FT &&
+      distanceKm(airport.center, [point[LON], point[LAT]]) < MAX_DISTANCE_KM;
+    if (!isLowOnApproach) continue;
+
     // From here: track the lowest point until it climbs away (go-around) or touches down (landing).
-    let lowest = p;
-    for (let j = i + 1; j < pts.length && pts[j][3] > 0; j++) {
-      if (pts[j][3] < lowest[3]) lowest = pts[j];
-      else if (pts[j][3] > lowest[3] + CLIMB_FT) return lowest[0];
+    let lowestPoint = point;
+    for (
+      let laterIndex = index + 1;
+      laterIndex < points.length && points[laterIndex][ALTITUDE] > 0;
+      laterIndex++
+    ) {
+      const laterPoint = points[laterIndex];
+      if (laterPoint[ALTITUDE] < lowestPoint[ALTITUDE])
+        lowestPoint = laterPoint;
+      else if (laterPoint[ALTITUDE] > lowestPoint[ALTITUDE] + MIN_CLIMB_FT)
+        return lowestPoint[TIME];
     }
     return undefined;
   }

@@ -2,9 +2,9 @@ import type { Flight, ReplayFile } from "../types/flight";
 
 /** Fetch a replay file. Handles .gz whether or not the server already decompressed it. */
 async function fetchReplayFile(url: string): Promise<ReplayFile> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  const bytes = new Uint8Array(await res.arrayBuffer());
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+  const bytes = new Uint8Array(await response.arrayBuffer());
   const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
   const text = isGzip
     ? await new Response(
@@ -21,18 +21,15 @@ async function fetchReplayFile(url: string): Promise<ReplayFile> {
 export async function loadFlights(
   airport: string,
   date: string,
-): Promise<{ flights: Flight[]; sample: boolean }> {
+): Promise<{ flights: Flight[]; isSample: boolean }> {
   try {
-    return {
-      flights: (await fetchReplayFile(`data/${airport}-${date}.json.gz`))
-        .flights,
-      sample: false,
-    };
+    const replayFile = await fetchReplayFile(`data/${airport}-${date}.json.gz`);
+    return { flights: replayFile.flights, isSample: false };
   } catch {
     const sample = await fetchReplayFile("data/sample.json");
     return {
       flights: sample.airport === airport ? sample.flights : [],
-      sample: true,
+      isSample: true,
     };
   }
 }

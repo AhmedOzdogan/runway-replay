@@ -1,7 +1,13 @@
 // Output format of the pipeline, see docs/data-format.md.
 
-/** [sec_offset, lon, lat, alt_ft]; alt_ft is 0 on the ground. */
+/** [secondsSinceMidnightUtc, longitude, latitude, altitudeFt]; altitude is 0 on the ground. */
 export type Point = [number, number, number, number];
+
+/** Positions inside a Point, so code reads point[ALTITUDE] instead of point[3]. */
+export const TIME = 0;
+export const LON = 1;
+export const LAT = 2;
+export const ALTITUDE = 3;
 
 /** One aircraft's continuous visit to the airport zone (an arrival, a departure, or an overflight). */
 export interface Flight {
@@ -21,7 +27,7 @@ export interface Flight {
 export interface ReplayFile {
   airport: string;
   date: string;
-  /** Unix time of 00:00 UTC on `date`; add sec_offset to get wall-clock time. */
+  /** Unix time of 00:00 UTC on `date`; add a point's TIME to get wall-clock time. */
   dayStart: number;
   flights: Flight[];
 }
@@ -30,6 +36,7 @@ export interface ReplayFile {
 export interface Plane {
   /** The flight it's on, or for a parked plane the flight it parked after (or before). */
   flight: Flight;
+  /** [longitude, latitude] */
   position: [number, number];
   /** Degrees clockwise from north. */
   heading: number;
@@ -38,6 +45,6 @@ export interface Plane {
   speed: number;
   /** Feet per minute, positive when climbing. */
   verticalRate: number;
-  /** sec_offset when it parked, or null while moving. 0 means parked since before midnight. */
+  /** Seconds since midnight when it parked, or null while moving. 0 means parked since before midnight. */
   parkedSince: number | null;
 }
