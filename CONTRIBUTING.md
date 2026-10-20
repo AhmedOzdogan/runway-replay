@@ -41,21 +41,23 @@ pipeline/                 Python: adsb.lol daily dump -> one .json.gz per airpor
   download.py             stream the dump (never saved to disk)
   filter.py, resample.py  keep points near the airport, split into flights, thin to 5 s
 web/src/
-  main.ts                 wires the map, components and replay together
-  style.css               Tailwind import + theme tokens (colours, glow, animation)
-  types/                  data types (Flight, Point, Plane, Airport)
+  main.tsx                React entry point: renders <App /> into index.html's #root
+  App.tsx                 page layout and app state (airport, selected plane, follow)
+  components/             UI: Header, Footer, AirportPicker, TimeBar, FlightCard, GoAroundBanner, ToggleButton
+  map/                    ReplayMap (MapLibre via react-map-gl), DeckOverlay, deck.gl layers
+  hooks/                  usePlayback (clock + keyboard), useFlights (loading), useGoAroundAlert
+  flights/                pure flight logic with unit tests: positions, parking, estimates, go-arounds, status text
   data/                   airport list, airline/aircraft names, loading the .json.gz files
-  flights/                flight logic: plane positions, parking, estimated ends, go-arounds
-  map/                    deck.gl layers drawn on the MapLibre map
-  components/             UI built with h() and Tailwind classes
-  utils/                  small helpers (DOM, distance)
+  types/                  data types (Flight, Point, Plane, Airport)
+  utils/                  small helpers (formatting, distance)
+  style.css               Tailwind import + theme tokens (colours, glow, animation)
 ```
 
 ## Tests and lint
 
 ```sh
 cd pipeline && ruff check . && ruff format --check . && pytest
-cd web && npm run lint && npm run build   # Biome, then type-check + build
+cd web && npm run lint && npm test && npm run build   # Biome, Vitest, then type-check + build
 ```
 
 Auto-fix: `ruff check --fix . && ruff format .` and `npm run format`. VS Code users: install the
