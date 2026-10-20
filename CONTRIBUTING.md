@@ -46,11 +46,13 @@ web/src/
   components/             UI: Header, Footer, AirportPicker, TimeBar, FlightCard, GoAroundBanner, ToggleButton
   map/                    ReplayMap (MapLibre via react-map-gl), DeckOverlay, deck.gl layers
   hooks/                  usePlayback (clock + keyboard), useFlights (loading), useGoAroundAlert
-  flights/                pure flight logic with unit tests: positions, parking, estimates, go-arounds, status text
+  flights/                pure flight logic: positions, parking, estimates, go-arounds, status text, radio
   data/                   airport list, airline/aircraft names, loading the .json.gz files
   types/                  data types (Flight, Point, Plane, Airport)
   utils/                  small helpers (formatting, distance)
   style.css               Tailwind import + theme tokens (colours, glow, animation)
+web/tests/unit/           Vitest unit tests, mirroring src/ (e.g. flights/radio.test.ts tests src/flights/radio.ts)
+  helpers.ts              shared test helpers (a test airport, flightThrough)
 ```
 
 ## Tests and lint

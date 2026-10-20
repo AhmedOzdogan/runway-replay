@@ -86,7 +86,8 @@ web/src/
   components/ React UI (Header, Footer, TimeBar, FlightCard, …)
   map/        MapLibre map and deck.gl layers
   hooks/      playback clock, data loading, go-around alerts
-  flights/    pure flight logic with unit tests
+  flights/    pure flight logic (positions, go-arounds, radio…)
+web/tests/unit/  Vitest unit tests, mirroring web/src/
 docs/         data format, screenshot
 ```
 
