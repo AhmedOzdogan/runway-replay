@@ -79,13 +79,13 @@ export function FlightCard({
   return (
     <aside
       aria-live="polite"
-      className="absolute top-4 right-4 z-10 w-[min(300px,calc(100vw-32px))] rounded-2xl border border-line bg-panel/95 p-4 shadow-card backdrop-blur-sm"
+      className="absolute top-4 right-4 z-10 w-[min(350px,calc(100vw-32px))] rounded-2xl border border-line bg-panel/95 p-4 shadow-card backdrop-blur-sm"
     >
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute top-2.5 right-2.5 size-7 cursor-pointer rounded-full border border-line text-lg leading-none hover:border-muted"
+        className="absolute top-2.5 right-2.5 size-7 cursor-pointer rounded-full border bg-muted border-line text-lg leading-none"
       >
         ×
       </button>
@@ -137,6 +137,7 @@ export function FlightCard({
       <label className="flex cursor-pointer items-center gap-2 accent-neon">
         <input
           type="checkbox"
+          className="w-5 h-5"
           checked={isFollowing}
           onChange={(event) => onFollowChange(event.target.checked)}
         />
