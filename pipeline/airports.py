@@ -1,7 +1,7 @@
-"""Known airports: IATA code -> (lat, lon)."""
+"""Known airports: IATA code -> (lat, lon). Keep in sync with web/src/airports.ts."""
 
 AIRPORTS = {
-    "FRA": (50.0333, 8.5706),
+    "MUC": (48.3538, 11.7861),
     "IST": (41.2753, 28.7519),
-    "LHR": (51.4700, -0.4543),
+    "HAN": (21.2212, 105.8072),
 }

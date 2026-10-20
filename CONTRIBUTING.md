@@ -21,8 +21,17 @@ npm install
 npm run dev
 ```
 
-The site loads `web/public/data/sample.json` during development, so you don't need to process
-a real day to work on the frontend. Formats: [docs/data-format.md](docs/data-format.md).
+Until you process a real day, Munich shows a few fake flights from `web/public/data/sample.json`,
+so you can work on the frontend without the ~3.5 GB download. Formats: [docs/data-format.md](docs/data-format.md).
+
+To process a real day (streams ~3.5 GB once, writes one file per airport):
+
+```sh
+cd pipeline && python process.py --airport MUC IST HAN --date 2026-10-18
+```
+
+On macOS with the python.org installer, if you get `CERTIFICATE_VERIFY_FAILED`, run
+`/Applications/Python\ 3.*/Install\ Certificates.command` once.
 
 ## Tests and lint
 

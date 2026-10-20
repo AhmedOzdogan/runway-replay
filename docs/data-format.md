@@ -8,8 +8,9 @@ Releases: https://github.com/adsblol/globe_history_2026/releases
   (~3.5 GB total, worldwide). Concatenate the parts and read them as one stream.
 - The tar starts with `heatmap/` files; the `traces/` come later (for 2026-10-18 they begin
   somewhere between 500 MB and 1 GB into `.tar.aa`).
-- Read it with `tarfile` in streaming mode (`mode="r|"`) and `filter="data"`. Never save the dump to disk.
-- Each trace is `traces/<xx>/trace_full_<icao>.json`, gzipped JSON.
+- Read it with `tarfile` in streaming mode (`mode="r|"`). Never save the dump to disk: members are
+  read in memory with `extractfile()`, so nothing is extracted (and no extraction filter applies).
+- Each trace is `./traces/<xx>/trace_full_<icao>.json` (note the `./` prefix), gzipped JSON.
 
 Top-level keys:
 
@@ -44,26 +45,31 @@ example: `web/public/data/sample.json`).
 
 ```json
 {
-  "airport": "FRA",
+  "airport": "MUC",
   "date": "2026-10-18",
   "dayStart": 1792281600,
-  "aircraft": [
+  "flights": [
     {
       "icao": "3c6444",
       "registration": "D-AIBD",
       "type": "A319",
-      "callsigns": ["DLH4AB"],
-      "points": [[28800, 8.30, 49.93, 6000], ...]
+      "callsign": "DLH4AB",
+      "points": [[28800, 11.45, 48.30, 6000], ...]
     }
   ]
 }
 ```
 
+- A **flight** is one continuous visit of an aircraft to the airport zone: an arrival, a
+  departure or an overflight. An aircraft's day is split into flights wherever its points in the
+  zone are more than 5 minutes apart, so one aircraft can appear several times.
 - `points` are `[sec_offset, lon, lat, alt_ft]`. Note lon before lat (deck.gl order), and
   altitude `0` for `"ground"`.
-- `sec_offset` is seconds since `dayStart`. deck.gl's TripsLayer stores timestamps as float32,
-  so never use full Unix time there.
-- Filtering: within ~50 km of the airport and below ~15,000 ft.
-- Size target is a few MB: resample to ~5 s steps and round coordinates (4 decimals ≈ 11 m).
-- `callsigns` are trimmed and de-duplicated, in order of first appearance.
-- Ground speed isn't stored; derive it from consecutive points, or add it as a 5th element if needed.
+- `sec_offset` is seconds since `dayStart` (00:00 UTC). deck.gl's TripsLayer stores timestamps
+  as float32, so never use full Unix time there.
+- Zone: within 50 km of the airport and below 15,000 ft. Parked aircraft (on the ground, under
+  3 kt) are dropped; taxiing ones are kept.
+- Resampled to at most one point per 5 s; coordinates rounded to 4 decimals (≈ 11 m), altitude
+  to whole feet.
+- `callsign` is the latest callsign seen for that flight (trimmed), or `null`.
+- Ground speed isn't stored; derive it from consecutive points if needed.

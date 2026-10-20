@@ -11,7 +11,7 @@ Replay one airport's full day of real flights at 50x speed: neon trails on a dar
 ## How it works
 
 ```
-adsb.lol daily dump  ──►  pipeline/process.py  ──►  FRA-2026-10-18.json.gz  ──►  browser
+adsb.lol daily dump  ──►  pipeline/process.py  ──►  MUC-2026-10-18.json.gz  ──►  browser
  (~3.5 GB, worldwide,       stream, keep planes        (a few MB, static file)      MapLibre + deck.gl
   streamed, never saved)    near the airport,                                        replay
                             resample to 5 s
@@ -28,7 +28,7 @@ Process a day (Python 3.11+):
 cd pipeline
 python -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev]'
-python process.py --airport FRA --date 2026-10-18   # stubs for now
+python process.py --airport MUC IST HAN --date 2026-10-18
 pytest
 ```
 

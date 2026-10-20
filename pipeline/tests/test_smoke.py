@@ -6,4 +6,4 @@ import resample  # noqa: F401
 
 
 def test_airports():
-    assert "FRA" in airports.AIRPORTS
+    assert "MUC" in airports.AIRPORTS
