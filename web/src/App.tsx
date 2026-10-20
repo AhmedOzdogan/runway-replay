@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlightCard } from "./components/FlightCard";
 import { Footer } from "./components/Footer";
 import { GoAroundBanner } from "./components/GoAroundBanner";
@@ -6,6 +6,7 @@ import { Header } from "./components/Header";
 import { TimeBar } from "./components/TimeBar";
 import { AIRPORTS } from "./data/airports";
 import { closestFlight, findParkings, planesAt } from "./flights/planes";
+import { isRadioTalking, linesSoFar, radioScript } from "./flights/radioScript";
 import { useFlights } from "./hooks/useFlights";
 import { useGoAroundAlert } from "./hooks/useGoAroundAlert";
 import { usePlayback } from "./hooks/usePlayback";
@@ -23,7 +24,10 @@ export function App() {
   const airport = AIRPORTS[airportCode];
   const { flights, status } = useFlights(airportCode, DATE);
   // ponytail: clock is UTC, so Hanoi (UTC+7) starts its local day at 17:00; add per-airport offsets if that matters.
-  const playback = usePlayback();
+  // While the selected plane's radio talks, hold the replay at 1x so it can be read and heard.
+  // Set from an effect below, so it takes effect one frame later: unnoticeable.
+  const [isRadioSlowMotion, setIsRadioSlowMotion] = useState(false);
+  const playback = usePlayback(isRadioSlowMotion ? 1 : undefined);
   const goAround = useGoAroundAlert(flights, playback.time);
 
   const parkings = useMemo(() => findParkings(flights), [flights]);
@@ -37,6 +41,15 @@ export function App() {
   const selectedFlight =
     selectedPlane?.flight ??
     (selectedIcao ? closestFlight(flights, selectedIcao, playback.time) : null);
+
+  // The selected flight's whole radio conversation, and the part said so far.
+  const radio = useMemo(
+    () => (selectedFlight ? radioScript(selectedFlight, airport) : []),
+    [selectedFlight, airport],
+  );
+  const radioLines = linesSoFar(radio, playback.time);
+  const radioTalking = isRadioTalking(radio, playback.time);
+  useEffect(() => setIsRadioSlowMotion(radioTalking), [radioTalking]);
 
   function selectPlane(icao: string | null) {
     setSelectedIcao(icao);
@@ -74,6 +87,7 @@ export function App() {
             airportCode={airportCode}
             airport={airport}
             isFollowing={isFollowing}
+            radioLines={radioLines}
             onFollowChange={setIsFollowing}
             onClose={() => selectPlane(null)}
           />
@@ -91,7 +105,7 @@ export function App() {
         )}
         {/* min(): 900px wide on desktop, but never wider than the screen minus a margin on phones. */}
         <div className="absolute bottom-4 left-1/2 z-10 w-[min(820px,calc(100%-24px))] -translate-x-1/2 rounded-3xl border border-white/10 bg-panel/85 px-4 py-3 shadow-card backdrop-blur-md sm:bottom-8 sm:px-6 sm:py-4">
-          <TimeBar {...playback} />
+          <TimeBar {...playback} isRadioSlowMotion={isRadioSlowMotion} />
         </div>
       </main>
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AIRCRAFT_TYPES, AIRLINES } from "../data/names";
+import type { RadioLine } from "../flights/radioScript";
 import {
   describeStatus,
   isOnEstimatedPart,
@@ -9,6 +10,7 @@ import {
 import type { Airport } from "../types/airport";
 import type { Flight, Plane } from "../types/flight";
 import { distanceKm } from "../utils/geo";
+import { RadioTranscript } from "./RadioTranscript";
 
 const COMPASS_DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 const KM_PER_NAUTICAL_MILE = 1.852;
@@ -21,6 +23,8 @@ interface FlightCardProps {
   airportCode: string;
   airport: Airport;
   isFollowing: boolean;
+  /** Radio lines said so far for this flight. */
+  radioLines: RadioLine[];
   onFollowChange: (isFollowing: boolean) => void;
   onClose: () => void;
 }
@@ -66,6 +70,7 @@ export function FlightCard({
   airportCode,
   airport,
   isFollowing,
+  radioLines,
   onFollowChange,
   onClose,
 }: FlightCardProps) {
@@ -143,6 +148,8 @@ export function FlightCard({
         />
         Follow this plane
       </label>
+
+      <RadioTranscript lines={radioLines} />
     </aside>
   );
 }

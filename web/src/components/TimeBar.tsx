@@ -2,6 +2,7 @@ import { type MouseEvent, useState } from "react";
 import {
   TbPlayerPauseFilled,
   TbPlayerPlayFilled,
+  TbRadio,
   TbRewindBackward60,
   TbRewindForward60,
 } from "react-icons/tb";
@@ -24,6 +25,11 @@ const SKIP_BUTTON_CLASSES =
  * playback speed. The timeline is a styled overlay on a real (invisible) range input, so it keeps
  * working with the keyboard and screen readers.
  */
+interface TimeBarProps extends Playback {
+  /** True while the radio is talking and the replay is held at 1x. */
+  isRadioSlowMotion?: boolean;
+}
+
 export function TimeBar({
   time,
   isPlaying,
@@ -31,7 +37,10 @@ export function TimeBar({
   togglePlay,
   seek,
   setSpeed,
-}: Playback) {
+  isRadioSlowMotion = false,
+}: TimeBarProps) {
+  // The speed it's actually playing at: 1x while the radio talks, otherwise the chosen one.
+  const currentSpeed = isRadioSlowMotion ? 1 : speed;
   // Where the mouse is over the timeline: the time it points at and how far along it is (0–1).
   const [hover, setHover] = useState<{ time: number; fraction: number } | null>(
     null,
@@ -133,24 +142,48 @@ export function TimeBar({
             {formatClock(time)}
           </output>
           <span className="ml-1 text-xs text-muted">UTC</span>
+          {isRadioSlowMotion && (
+            <span
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-neon/15 px-2 py-0.5 align-middle text-[11px] text-neon"
+              title="Slowed down to 1x while the radio is talking"
+            >
+              <TbRadio size={12} aria-hidden="true" /> Radio · 1x
+            </span>
+          )}
         </div>
 
         <fieldset
           className="flex rounded-full border border-line bg-night/60 p-0.5 sm:col-start-3 sm:row-start-1 sm:justify-self-end"
           aria-label="Playback speed"
         >
-          {SPEEDS.map((speedOption, index) => (
-            <button
-              key={speedOption}
-              type="button"
-              aria-pressed={speedOption === speed}
-              title={`${speedOption}x speed (key ${index + 1})`}
-              onClick={() => setSpeed(speedOption)}
-              className="cursor-pointer rounded-full px-2.5 py-1 text-xs text-muted transition-colors hover:text-fg aria-pressed:bg-neon aria-pressed:font-semibold aria-pressed:text-night"
-            >
-              {speedOption}x
-            </button>
-          ))}
+          {SPEEDS.map((speedOption, index) => {
+            // Highlight the speed it's really playing at; while the radio holds it at 1x,
+            // outline the chosen speed it will return to.
+            const isWaitingToResume =
+              isRadioSlowMotion &&
+              speedOption === speed &&
+              speed !== currentSpeed;
+            return (
+              <button
+                key={speedOption}
+                type="button"
+                aria-pressed={speedOption === currentSpeed}
+                title={
+                  isWaitingToResume
+                    ? `${speedOption}x speed, resumes after the radio (key ${index + 1})`
+                    : `${speedOption}x speed (key ${index + 1})`
+                }
+                onClick={() => setSpeed(speedOption)}
+                className={`cursor-pointer rounded-full px-2.5 py-1 text-xs text-muted transition-colors hover:text-fg aria-pressed:bg-neon aria-pressed:font-semibold aria-pressed:text-night ${
+                  isWaitingToResume
+                    ? "text-neon ring-1 ring-neon/60 ring-inset"
+                    : ""
+                }`}
+              >
+                {speedOption}x
+              </button>
+            );
+          })}
         </fieldset>
       </div>
     </div>

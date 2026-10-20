@@ -18,11 +18,15 @@ export interface Playback {
 /**
  * The replay clock: plays the day at `speed` times real time and stops at midnight.
  * Keyboard: Space plays/pauses, 1–5 pick a speed from SPEEDS.
+ * `maxSpeed` temporarily caps the speed (e.g. 1x while the radio talks) without changing the
+ * speed the user picked, so it comes back by itself.
  */
-export function usePlayback(): Playback {
+export function usePlayback(maxSpeed = Number.POSITIVE_INFINITY): Playback {
   const [time, setTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
+
+  const effectiveSpeed = Math.min(speed, maxSpeed);
 
   // Advance the clock on every animation frame while playing.
   useEffect(() => {
@@ -33,13 +37,13 @@ export function usePlayback(): Playback {
       const realSecondsElapsed = (timestamp - lastTimestamp) / 1000;
       lastTimestamp = timestamp;
       setTime((current) =>
-        Math.min(current + realSecondsElapsed * speed, LAST_SECOND),
+        Math.min(current + realSecondsElapsed * effectiveSpeed, LAST_SECOND),
       );
       frameId = requestAnimationFrame(onAnimationFrame);
     };
     frameId = requestAnimationFrame(onAnimationFrame);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, speed]);
+  }, [isPlaying, effectiveSpeed]);
 
   // Stop at the end of the day.
   useEffect(() => {
