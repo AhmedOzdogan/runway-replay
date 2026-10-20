@@ -101,7 +101,8 @@ function findParkings(flights: Flight[]): Parking[] {
       const pts = f.points;
       const first = pts[0];
       const last = pts[pts.length - 1];
-      if (i === 0 && first[3] === 0) {
+      // Estimated takeoffs/landings start or end on the runway: don't park planes there.
+      if (i === 0 && first[3] === 0 && f.estimatedBefore === undefined) {
         parkings.push({
           from: 0,
           to: first[0],
@@ -110,7 +111,7 @@ function findParkings(flights: Flight[]): Parking[] {
           heading: headingBetween(first, pts[1]),
         });
       }
-      if (last[3] === 0) {
+      if (last[3] === 0 && f.estimatedAfter === undefined) {
         parkings.push({
           from: last[0],
           to: list[i + 1]?.points[0][0] ?? DAY,

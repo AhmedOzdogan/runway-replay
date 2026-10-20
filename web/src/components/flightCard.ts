@@ -129,7 +129,13 @@ export function createFlightCard(handlers: {
         field(name).textContent = "—";
       return;
     }
-    field("status").textContent = status(plane, time);
+    const { estimatedBefore, estimatedAfter } = plane.flight;
+    const estimated =
+      plane.parkedSince === null &&
+      ((estimatedBefore !== undefined && time < estimatedBefore) ||
+        (estimatedAfter !== undefined && time > estimatedAfter));
+    field("status").textContent =
+      status(plane, time) + (estimated ? " · estimated" : "");
     const trend =
       plane.verticalRate > 300 ? " ↑" : plane.verticalRate < -300 ? " ↓" : "";
     field("altitude").textContent =

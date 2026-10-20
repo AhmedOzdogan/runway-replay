@@ -10,6 +10,10 @@ export interface Flight {
   type: string | null;
   callsign: string | null;
   points: Point[];
+  /** Added in the browser (estimate.ts), not in the file: points before this time are estimated. */
+  estimatedBefore?: number;
+  /** Added in the browser (estimate.ts), not in the file: points after this time are estimated. */
+  estimatedAfter?: number;
 }
 
 export interface ReplayFile {

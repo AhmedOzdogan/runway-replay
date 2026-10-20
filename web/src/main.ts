@@ -8,6 +8,7 @@ import { createFlightCard } from "./components/flightCard";
 import { createTimeBar } from "./components/timeBar";
 import { loadFlights } from "./data";
 import { query } from "./dom";
+import { fillMissingEnds } from "./estimate";
 import { createReplay } from "./replay";
 import type { Flight } from "./types";
 import "./style.css";
@@ -80,7 +81,7 @@ async function showAirport(code: string): Promise<void> {
   try {
     const { flights, sample } = await loadFlights(code, DATE);
     if (currentAirport !== code) return; // the user picked another airport meanwhile
-    replay.setFlights(flights);
+    replay.setFlights(fillMissingEnds(flights, AIRPORTS[code]));
     status.textContent = sample
       ? `No data for ${code} on ${DATE} yet${flights.length ? ", showing sample flights" : ""}`
       : `${flights.length} flights · ${DATE}`;
