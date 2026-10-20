@@ -1,3 +1,6 @@
+import logo1x from "../assets/logo@1x.png";
+import logo2x from "../assets/logo@2x.png";
+import logo3x from "../assets/logo@3x.png";
 import { AIRPORTS } from "../data/airports";
 import { AirportPicker } from "./AirportPicker";
 
@@ -10,9 +13,16 @@ interface HeaderProps {
 export function Header({ airportCode, status, onSelectAirport }: HeaderProps) {
   return (
     <header className="flex flex-wrap items-center gap-4 border-b border-line bg-panel px-4 py-2.5">
-      <span className="text-lg tracking-wide">
-        Sky<b className="text-neon text-shadow-neon">Replay</b>
-      </span>
+      <h1>
+        {/* 28px tall; srcSet lets retina screens pick the sharper 2x/3x file. */}
+        <img
+          src={logo1x}
+          srcSet={`${logo1x} 1x, ${logo2x} 2x, ${logo3x} 3x`}
+          width={101}
+          height={28}
+          alt="SkyReplay"
+        />
+      </h1>
       <AirportPicker
         airports={AIRPORTS}
         selectedCode={airportCode}
