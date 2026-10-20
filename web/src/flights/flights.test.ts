@@ -5,6 +5,7 @@ import { fillMissingEnds } from "./estimate";
 import { findGoAround } from "./goAround";
 import { findParkings, planeAt } from "./planes";
 import { classifyFlight, describeStatus } from "./status";
+import { isGroundVehicle } from "./vehicle";
 
 const AIRPORT: Airport = {
   name: "Test",
@@ -134,5 +135,32 @@ describe("findParkings", () => {
       [70, 11.7742, 0], // ~310 m in 10 s ≈ 60 kt: the receiver lost it mid-rollout
     ]);
     expect(findParkings([lostOnRunway])).toHaveLength(0);
+  });
+});
+
+describe("isGroundVehicle", () => {
+  const drivesAround = flightThrough([
+    [0, 11.77, 0],
+    [60, 11.78, 0],
+  ]);
+
+  it("is true for a vehicle that sends category C2", () => {
+    expect(isGroundVehicle({ ...drivesAround, category: "C2" })).toBe(true);
+  });
+
+  it("is true for a track with no category and no type that never leaves the ground", () => {
+    expect(
+      isGroundVehicle({ ...drivesAround, category: null, type: null }),
+    ).toBe(true);
+  });
+
+  it("is false for an airliner, even when its callsign starts with C", () => {
+    const condor = {
+      ...drivesAround,
+      callsign: "CFG123",
+      category: "A3",
+      type: "A320",
+    };
+    expect(isGroundVehicle(condor)).toBe(false);
   });
 });

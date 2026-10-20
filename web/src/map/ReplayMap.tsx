@@ -2,6 +2,7 @@ import type { PickingInfo } from "@deck.gl/core";
 import type { MapLibreEvent } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { Map as MapLibreMap, type MapRef, Marker } from "react-map-gl/maplibre";
+import { isGroundVehicle } from "../flights/vehicle";
 import type { Airport } from "../types/airport";
 import type { Flight, Plane } from "../types/flight";
 import { DeckOverlay } from "./DeckOverlay";
@@ -35,11 +36,9 @@ function brightenRunways(event: MapLibreEvent) {
 function planeTooltip({ object }: PickingInfo<Plane>) {
   if (!object) return null;
   const { callsign, icao, type } = object.flight;
-  const parts = [
-    callsign ?? icao,
-    type,
-    object.parkedSince !== null ? "parked" : null,
-  ];
+  const parts = isGroundVehicle(object.flight)
+    ? [callsign ?? icao, "ground vehicle"]
+    : [callsign ?? icao, type, object.parkedSince !== null ? "parked" : null];
   return { text: parts.filter(Boolean).join(" · "), style: TOOLTIP_STYLE };
 }
 
@@ -105,10 +104,18 @@ export function ReplayMap({
           createTrailLayer(flights, time),
           createPlaneLayer(planes, selectedPlane, time),
         ]}
-        onHover={({ object }) => setIsHoveringPlane(Boolean(object))}
-        onClick={({ object }) =>
-          onSelectPlane((object as Plane | undefined)?.flight.icao ?? null)
+        // Only aircraft are clickable: ground vehicles get a tooltip but no flight card.
+        onHover={({ object }) =>
+          setIsHoveringPlane(
+            Boolean(object) && !isGroundVehicle((object as Plane).flight),
+          )
         }
+        onClick={({ object }) => {
+          const plane = object as Plane | undefined;
+          onSelectPlane(
+            plane && !isGroundVehicle(plane.flight) ? plane.flight.icao : null,
+          );
+        }}
         getTooltip={planeTooltip}
       />
     </MapLibreMap>
