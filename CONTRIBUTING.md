@@ -33,6 +33,24 @@ cd pipeline && python process.py --airport MUC IST HAN --date 2026-10-18
 On macOS with the python.org installer, if you get `CERTIFICATE_VERIFY_FAILED`, run
 `/Applications/Python\ 3.*/Install\ Certificates.command` once.
 
+## Project structure
+
+```
+pipeline/                 Python: adsb.lol daily dump -> one .json.gz per airport-day
+  process.py              CLI entry point
+  download.py             stream the dump (never saved to disk)
+  filter.py, resample.py  keep points near the airport, split into flights, thin to 5 s
+web/src/
+  main.ts                 wires the map, components and replay together
+  style.css               Tailwind import + theme tokens (colours, glow, animation)
+  types/                  data types (Flight, Point, Plane, Airport)
+  data/                   airport list, airline/aircraft names, loading the .json.gz files
+  flights/                flight logic: plane positions, parking, estimated ends, go-arounds
+  map/                    deck.gl layers drawn on the MapLibre map
+  components/             UI built with h() and Tailwind classes
+  utils/                  small helpers (DOM, distance)
+```
+
 ## Tests and lint
 
 ```sh

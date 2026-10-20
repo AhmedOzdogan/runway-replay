@@ -1,4 +1,4 @@
-"""Known airports: IATA code -> (lat, lon). Keep in sync with web/src/airports.ts."""
+"""Known airports: IATA code -> (lat, lon). Keep in sync with web/src/data/airports.ts."""
 
 AIRPORTS = {
     "MUC": (48.3538, 11.7861),

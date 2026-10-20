@@ -40,7 +40,7 @@ sends no CORS headers, so a browser can't call it.
 
 ## Output: one file per airport-day
 
-`web/public/data/<AIRPORT>-<YYYY-MM-DD>.json.gz` (TypeScript types: `web/src/types.ts`,
+`web/public/data/<AIRPORT>-<YYYY-MM-DD>.json.gz` (TypeScript types: `web/src/types/flight.ts`,
 example: `web/public/data/sample.json`).
 
 ```json
