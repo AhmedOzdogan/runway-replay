@@ -1,7 +1,12 @@
 import type { PickingInfo } from "@deck.gl/core";
 import type { MapLibreEvent } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
-import { Map as MapLibreMap, type MapRef, Marker } from "react-map-gl/maplibre";
+import {
+  AttributionControl,
+  Map as MapLibreMap,
+  type MapRef,
+  Marker,
+} from "react-map-gl/maplibre";
 import { isGroundVehicle } from "../flights/vehicle";
 import type { Airport } from "../types/airport";
 import type { Flight, Plane } from "../types/flight";
@@ -37,8 +42,8 @@ function planeTooltip({ object }: PickingInfo<Plane>) {
   if (!object) return null;
   const { callsign, icao, type } = object.flight;
   const parts = isGroundVehicle(object.flight)
-    ? [callsign ?? icao, "ground vehicle"]
-    : [callsign ?? icao, type, object.parkedSince !== null ? "parked" : null];
+    ? [callsign ?? icao, "Ground Vehicle"]
+    : [callsign ?? icao, type, object.parkedSince !== null ? "Parked" : null];
   return { text: parts.filter(Boolean).join(" · "), style: TOOLTIP_STYLE };
 }
 
@@ -85,10 +90,14 @@ export function ReplayMap({
         zoom: DEFAULT_ZOOM,
       }}
       mapStyle={MAP_STYLE_URL}
+      // Replaced by the compact control below, which the time bar can't cover.
+      attributionControl={false}
       onLoad={brightenRunways}
       // Empty keeps MapLibre's own grab / grabbing cursors for panning.
       cursor={isHoveringPlane ? "pointer" : ""}
     >
+      {/* Map credits (required by CARTO and OpenStreetMap), as a small ⓘ in the top left. */}
+      <AttributionControl position="top-left" compact />
       <Marker
         longitude={airport.center[0]}
         latitude={airport.center[1]}

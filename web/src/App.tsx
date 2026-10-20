@@ -3,6 +3,7 @@ import { FlightCard } from "./components/FlightCard";
 import { Footer } from "./components/Footer";
 import { GoAroundBanner } from "./components/GoAroundBanner";
 import { Header } from "./components/Header";
+import { TimeBar } from "./components/TimeBar";
 import { AIRPORTS } from "./data/airports";
 import { closestFlight, findParkings, planesAt } from "./flights/planes";
 import { useFlights } from "./hooks/useFlights";
@@ -88,8 +89,13 @@ export function App() {
             }}
           />
         )}
+        {/* min(): 900px wide on desktop, but never wider than the screen minus a margin on phones. */}
+        <div className="absolute bottom-4 left-1/2 z-10 w-[min(820px,calc(100%-24px))] -translate-x-1/2 rounded-3xl border border-white/10 bg-panel/85 px-4 py-3 shadow-card backdrop-blur-md sm:bottom-8 sm:px-6 sm:py-4">
+          <TimeBar {...playback} />
+        </div>
       </main>
-      <Footer playback={playback} />
+
+      <Footer />
     </div>
   );
 }

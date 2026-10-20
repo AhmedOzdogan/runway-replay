@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 const SECONDS_PER_DAY = 86400;
 export const LAST_SECOND = SECONDS_PER_DAY - 1;
 export const SPEEDS = [1, 2, 4, 8, 16];
+export const SKIP_SECONDS = 60; // how far the −1 min / +1 min buttons jump
 
 export interface Playback {
   /** Seconds since 00:00 UTC, the same TIME as in the data points. */
@@ -45,6 +46,11 @@ export function usePlayback(): Playback {
     if (time >= LAST_SECOND) setIsPlaying(false);
   }, [time]);
 
+  // Every caller (slider, skip buttons, keys) goes through here, so the time always stays within the day.
+  const seek = useCallback((newTime: number) => {
+    setTime(Math.min(Math.max(newTime, 0), LAST_SECOND));
+  }, []);
+
   const togglePlay = useCallback(() => {
     setIsPlaying((playing) => !playing);
     // Pressing play at the end of the day starts it again.
@@ -84,5 +90,5 @@ export function usePlayback(): Playback {
     };
   }, [togglePlay]);
 
-  return { time, isPlaying, speed, togglePlay, seek: setTime, setSpeed };
+  return { time, isPlaying, speed, togglePlay, seek, setSpeed };
 }
