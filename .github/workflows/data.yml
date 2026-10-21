@@ -1,0 +1,65 @@
+name: Daily data
+
+# adsb.lol publishes day D's dump at about 03:30 UTC on D+1, so process "yesterday" after that.
+# The result is force-pushed as a single commit to the orphan `data` branch: only the newest day
+# is kept, so the repo doesn't grow by ~1.6 MB every night.
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Day to process (YYYY-MM-DD), default yesterday"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    env:
+      AIRPORTS: MUC IST HAN
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick the day and check it's new and published
+        id: day
+        env:
+          INPUT_DATE: ${{ inputs.date }}
+        run: |
+          date="${INPUT_DATE:-$(date -u -d yesterday +%F)}"
+          echo "date=$date" >> "$GITHUB_OUTPUT"
+          if git fetch --depth 1 origin data 2>/dev/null \
+            && git show FETCH_HEAD:latest.json | grep -q "\"$date\""; then
+            echo "$date is already on the data branch."; echo "skip=true" >> "$GITHUB_OUTPUT"
+          elif ! gh release view "v${date//-/.}-planes-readsb-prod-0" \
+            -R "adsblol/globe_history_${date:0:4}" > /dev/null; then
+            echo "adsb.lol hasn't published $date yet."; echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.day.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - if: steps.day.outputs.skip != 'true'
+        name: Process the day (streams ~3.5 GB)
+        working-directory: pipeline
+        run: python process.py --airport $AIRPORTS --date ${{ steps.day.outputs.date }}
+
+      - if: steps.day.outputs.skip != 'true'
+        name: Force-push the files to the data branch
+        working-directory: web/public/data
+        run: |
+          git init -b data
+          git add *.json.gz latest.json
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Data for ${{ steps.day.outputs.date }}"
+          git push --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" data

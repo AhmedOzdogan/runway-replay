@@ -24,6 +24,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      # The day files live on the orphan `data` branch (see data.yml).
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data
+      - run: cp data/*.json.gz data/latest.json web/public/data/
       - uses: actions/setup-node@v4
         with:
           node-version-file: web/.nvmrc
