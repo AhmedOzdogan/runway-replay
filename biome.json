@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
-  "files": { "includes": ["web/**", "!!web/dist", "!!web/node_modules"] },
+  "files": { "includes": ["web/**", "!!web/dist", "!!web/node_modules", "!!web/public/data/latest.json"] },
   "formatter": { "indentStyle": "space" },
   "css": { "parser": { "tailwindDirectives": true } },
   "linter": { "rules": { "preset": "recommended" } }

@@ -14,21 +14,31 @@ async function fetchReplayFile(url: string): Promise<ReplayFile> {
   return JSON.parse(text);
 }
 
+/** The newest processed day, from data/latest.json (written by the pipeline). */
+async function fetchLatestDate(): Promise<string> {
+  const response = await fetch("data/latest.json");
+  if (!response.ok)
+    throw new Error(`data/latest.json: HTTP ${response.status}`);
+  const latest: { date: string } = await response.json();
+  return latest.date;
+}
+
 /**
- * Load one airport-day. Falls back to data/sample.json (a few fake flights) when the real file
- * hasn't been processed yet and the sample is for the same airport.
+ * Load the newest day for one airport. Falls back to data/sample.json (a few fake flights) when
+ * no real day has been processed yet and the sample is for the same airport.
  */
 export async function loadFlights(
   airport: string,
-  date: string,
-): Promise<{ flights: Flight[]; isSample: boolean }> {
+): Promise<{ flights: Flight[]; date: string; isSample: boolean }> {
   try {
+    const date = await fetchLatestDate();
     const replayFile = await fetchReplayFile(`data/${airport}-${date}.json.gz`);
-    return { flights: replayFile.flights, isSample: false };
+    return { flights: replayFile.flights, date, isSample: false };
   } catch {
     const sample = await fetchReplayFile("data/sample.json");
     return {
       flights: sample.airport === airport ? sample.flights : [],
+      date: sample.date,
       isSample: true,
     };
   }

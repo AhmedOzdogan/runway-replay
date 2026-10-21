@@ -19,8 +19,10 @@ __pycache__/
 .env
 .env.*
 
-# Real processed days are large; only sample.json is committed.
+# Real processed days live on the `data` branch (see .github/workflows/data.yml);
+# only sample.json is committed to main.
 web/public/data/*.json.gz
+web/public/data/latest.json
 
 # Local AI assistant notes
 CLAUDE.md

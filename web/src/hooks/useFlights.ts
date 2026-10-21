@@ -10,8 +10,8 @@ interface FlightsState {
   status: string;
 }
 
-/** Loads and prepares one airport-day; reloads when the airport or date changes. */
-export function useFlights(airportCode: string, date: string): FlightsState {
+/** Loads and prepares the newest day for one airport; reloads when the airport changes. */
+export function useFlights(airportCode: string): FlightsState {
   const [state, setState] = useState<FlightsState>({
     flights: [],
     status: "Loading…",
@@ -21,11 +21,11 @@ export function useFlights(airportCode: string, date: string): FlightsState {
     let isCancelled = false; // the user picked another airport before this one finished loading
     setState({ flights: [], status: "Loading…" });
 
-    loadFlights(airportCode, date)
-      .then(({ flights, isSample }) => {
+    loadFlights(airportCode)
+      .then(({ flights, date, isSample }) => {
         if (isCancelled) return;
         const status = isSample
-          ? `No data for ${airportCode} on ${date} yet${flights.length ? ", showing sample flights" : ""}`
+          ? `No data for ${airportCode} yet${flights.length ? ", showing sample flights" : ""}`
           : `${flights.length} flights · ${date}`;
         setState({
           flights: prepareFlights(flights, AIRPORTS[airportCode]),
@@ -43,7 +43,7 @@ export function useFlights(airportCode: string, date: string): FlightsState {
     return () => {
       isCancelled = true;
     };
-  }, [airportCode, date]);
+  }, [airportCode]);
 
   return state;
 }

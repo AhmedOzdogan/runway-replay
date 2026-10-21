@@ -1,7 +1,7 @@
 """CLI: python process.py --airport MUC IST HAN --date 2026-10-18
 
 Streams the adsb.lol dump for one day once and writes one file per airport:
-../web/public/data/<AIRPORT>-<DATE>.json.gz
+../web/public/data/<AIRPORT>-<DATE>.json.gz, plus latest.json naming that date.
 """
 
 import argparse
@@ -76,6 +76,9 @@ def main() -> None:
             json.dump(data, output_file, separators=(",", ":"))
         size_mb = output_path.stat().st_size / 1e6
         print(f"{output_path}: {len(airport_flights)} flights, {size_mb:.1f} MB")
+
+    # The web app reads this to know which day to load.
+    (OUTPUT_DIR / "latest.json").write_text(json.dumps({"date": args.date}))
 
 
 if __name__ == "__main__":

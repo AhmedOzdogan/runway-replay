@@ -14,8 +14,6 @@ import { usePlayback } from "./hooks/usePlayback";
 import { useRadioVoice } from "./hooks/useRadioVoice";
 import { ReplayMap } from "./map/ReplayMap";
 
-// ponytail: one fixed day until there's a date picker.
-const DATE = "2026-10-18";
 const DEFAULT_AIRPORT = "MUC";
 
 export function App() {
@@ -25,7 +23,7 @@ export function App() {
   const [aboutSection, setAboutSection] = useState<AboutSection | null>(null);
 
   const airport = AIRPORTS[airportCode];
-  const { flights, status } = useFlights(airportCode, DATE);
+  const { flights, status } = useFlights(airportCode);
   // ponytail: clock is UTC, so Hanoi (UTC+7) starts its local day at 17:00; add per-airport offsets if that matters.
   // While the selected plane's radio talks, hold the replay at 1x so it can be read and heard.
   // Set from an effect below, so it takes effect one frame later: unnoticeable.
