@@ -1,11 +1,9 @@
 name: CI
 
-# Disabled for now: manual trigger only. To enable, replace with:
-#   on:
-#     pull_request:
-#     push:
-#       branches: [main]
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
