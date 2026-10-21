@@ -7,6 +7,7 @@ import {
   routeEnds,
   VERTICAL_RATE_THRESHOLD,
 } from "../flights/status";
+import type { RadioVoice } from "../hooks/useRadioVoice";
 import type { Airport } from "../types/airport";
 import type { Flight, Plane } from "../types/flight";
 import { distanceKm } from "../utils/geo";
@@ -25,6 +26,7 @@ interface FlightCardProps {
   isFollowing: boolean;
   /** Radio lines said so far for this flight. */
   radioLines: RadioLine[];
+  radioVoice: Pick<RadioVoice, "status" | "progress" | "toggle">;
   onFollowChange: (isFollowing: boolean) => void;
   onClose: () => void;
 }
@@ -71,6 +73,7 @@ export function FlightCard({
   airport,
   isFollowing,
   radioLines,
+  radioVoice,
   onFollowChange,
   onClose,
 }: FlightCardProps) {
@@ -149,7 +152,7 @@ export function FlightCard({
         Follow this plane
       </label>
 
-      <RadioTranscript lines={radioLines} />
+      <RadioTranscript lines={radioLines} voice={radioVoice} />
     </aside>
   );
 }

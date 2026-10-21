@@ -10,6 +10,7 @@ import { isRadioTalking, linesSoFar, radioScript } from "./flights/radioScript";
 import { useFlights } from "./hooks/useFlights";
 import { useGoAroundAlert } from "./hooks/useGoAroundAlert";
 import { usePlayback } from "./hooks/usePlayback";
+import { useRadioVoice } from "./hooks/useRadioVoice";
 import { ReplayMap } from "./map/ReplayMap";
 
 // ponytail: one fixed day until there's a date picker.
@@ -48,7 +49,10 @@ export function App() {
     [selectedFlight, airport],
   );
   const radioLines = linesSoFar(radio, playback.time);
-  const radioTalking = isRadioTalking(radio, playback.time);
+  const radioVoice = useRadioVoice(radio, playback.time);
+  // Stay at 1x while a line is shown or still being spoken (a spoken line can run longer).
+  const radioTalking =
+    isRadioTalking(radio, playback.time) || radioVoice.isSpeaking;
   useEffect(() => setIsRadioSlowMotion(radioTalking), [radioTalking]);
 
   function selectPlane(icao: string | null) {
@@ -88,6 +92,7 @@ export function App() {
             airport={airport}
             isFollowing={isFollowing}
             radioLines={radioLines}
+            radioVoice={radioVoice}
             onFollowChange={setIsFollowing}
             onClose={() => selectPlane(null)}
           />

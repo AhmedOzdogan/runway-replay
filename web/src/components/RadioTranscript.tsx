@@ -1,18 +1,26 @@
 import { useEffect, useRef } from "react";
-import { TbBuildingBroadcastTower, TbUserCircle } from "react-icons/tb";
+import {
+  TbBuildingBroadcastTower,
+  TbLoader2,
+  TbUserCircle,
+  TbVolume,
+  TbVolumeOff,
+} from "react-icons/tb";
 import type { RadioLine } from "../flights/radioScript";
+import type { RadioVoice } from "../hooks/useRadioVoice";
 import { formatClock } from "../utils/format";
 
 interface RadioTranscriptProps {
   /** The lines said so far, oldest first. */
   lines: RadioLine[];
+  voice: Pick<RadioVoice, "status" | "progress" | "toggle">;
 }
 
 /**
  * The simulated radio conversation as chat bubbles: captain on the left, ATC on the right.
  * Scrolls down by itself when a new line arrives.
  */
-export function RadioTranscript({ lines }: RadioTranscriptProps) {
+export function RadioTranscript({ lines, voice }: RadioTranscriptProps) {
   const listRef = useRef<HTMLOListElement>(null);
 
   // Keep the newest line in view whenever one is added (or removed by scrubbing back).
@@ -25,8 +33,11 @@ export function RadioTranscript({ lines }: RadioTranscriptProps) {
     <section aria-label="Radio" className="mt-3 border-t border-line pt-3">
       <h2 className="mb-2 flex items-center justify-between text-[11px] tracking-wider text-muted uppercase">
         <span>📻 Radio</span>
-        <span className="rounded-full border border-line px-1.5 py-px text-[10px] normal-case tracking-normal">
-          Simulated
+        <span className="flex items-center gap-2 normal-case tracking-normal">
+          <span className="rounded-full border border-line px-1.5 py-px text-[10px]">
+            Simulated
+          </span>
+          <VoiceButton voice={voice} />
         </span>
       </h2>
 
@@ -67,5 +78,50 @@ export function RadioTranscript({ lines }: RadioTranscriptProps) {
         </ol>
       )}
     </section>
+  );
+}
+
+const VOICE_LABELS: Record<RadioVoice["status"], string> = {
+  off: "Turn on the radio voice (downloads ~90 MB once)",
+  loading: "Downloading the radio voice…",
+  on: "Turn off the radio voice",
+  error: "The radio voice couldn't load. Click to try again.",
+};
+
+/** Off by default: the first click downloads the voice model, after that it's cached. */
+function VoiceButton({
+  voice,
+}: {
+  voice: Pick<RadioVoice, "status" | "progress" | "toggle">;
+}) {
+  const { status, progress, toggle } = voice;
+  return (
+    <button
+      type="button"
+      aria-pressed={status === "on"}
+      aria-label={VOICE_LABELS[status]}
+      title={VOICE_LABELS[status]}
+      onClick={toggle}
+      disabled={status === "loading"}
+      className="flex h-6 cursor-pointer items-center gap-1 rounded-full px-1.5 text-[10px] text-muted transition-colors hover:bg-white/5 hover:text-fg disabled:cursor-wait aria-pressed:text-neon"
+    >
+      {status === "loading" ? (
+        <>
+          <TbLoader2
+            size={14}
+            className="motion-safe:animate-spin"
+            aria-hidden="true"
+          />
+          {progress}%
+        </>
+      ) : status === "on" ? (
+        <TbVolume size={16} aria-hidden="true" />
+      ) : (
+        <>
+          <TbVolumeOff size={16} aria-hidden="true" />
+          {status === "error" ? "Retry" : "Voice"}
+        </>
+      )}
+    </button>
   );
 }
