@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AboutDialog, type AboutSection } from "./components/AboutDialog";
 import { FlightCard } from "./components/FlightCard";
 import { Footer } from "./components/Footer";
 import { GoAroundBanner } from "./components/GoAroundBanner";
@@ -21,6 +22,7 @@ export function App() {
   const [airportCode, setAirportCode] = useState(DEFAULT_AIRPORT);
   const [selectedIcao, setSelectedIcao] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [aboutSection, setAboutSection] = useState<AboutSection | null>(null);
 
   const airport = AIRPORTS[airportCode];
   const { flights, status } = useFlights(airportCode, DATE);
@@ -71,6 +73,7 @@ export function App() {
         airportCode={airportCode}
         status={status}
         onSelectAirport={selectAirport}
+        onOpenHelp={() => setAboutSection("about")}
       />
       <main className="relative flex-1">
         <ReplayMap
@@ -114,7 +117,11 @@ export function App() {
         </div>
       </main>
 
-      <Footer />
+      <Footer onOpenLegal={() => setAboutSection("legal")} />
+      <AboutDialog
+        openAt={aboutSection}
+        onClose={() => setAboutSection(null)}
+      />
     </div>
   );
 }

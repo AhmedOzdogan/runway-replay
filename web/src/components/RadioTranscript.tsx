@@ -82,7 +82,7 @@ export function RadioTranscript({ lines, voice }: RadioTranscriptProps) {
 }
 
 const VOICE_LABELS: Record<RadioVoice["status"], string> = {
-  off: "Turn on the radio voice (downloads ~90 MB once)",
+  off: "Turn on the radio voice (downloads ~90 MB once from huggingface.co)",
   loading: "Downloading the radio voice…",
   on: "Turn off the radio voice",
   error: "The radio voice couldn't load. Click to try again.",
