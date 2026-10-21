@@ -1,36 +1,70 @@
-# Runway Replay
+<div align="center">
 
-Replay one airport's full day of real flights as a timelapse: neon trails on a dark map, planes
-taxiing to their gates, and the occasional go-around.
+<img src="web/src/assets/logo@2x.png" alt="Runway Replay" width="300">
 
-![Runway Replay showing Munich airport: parked planes at the gates, a selected aircraft taxiing with its info card open](docs/screenshot.png)
+### Replay one airport's full day of real flights as a timelapse
 
-**Live demo:** https://ahmedozdogan.github.io/runway-replay/ (not deployed yet)
+Neon trails on a dark map, planes taxiing to their gates, simulated ATC radio — and the occasional go-around.<br>
+No backend, no database, no API keys: one static site and one nightly data file.
 
-> **Status:** early and moving fast. V1 is mostly done; see the [roadmap](ROADMAP.md) and the open
-> issues. Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
+[![CI](https://github.com/AhmedOzdogan/runway-replay/actions/workflows/ci.yml/badge.svg)](https://github.com/AhmedOzdogan/runway-replay/actions/workflows/ci.yml)
+[![Daily data](https://github.com/AhmedOzdogan/runway-replay/actions/workflows/data.yml/badge.svg)](https://github.com/AhmedOzdogan/runway-replay/actions/workflows/data.yml)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-blue?style=flat-square)](LICENSE)
+[![Data: ODbL](https://img.shields.io/badge/data-ODbL-orange?style=flat-square)](https://opendatacommons.org/licenses/odbl/1-0/)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 
-## Features
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev)
+[![deck.gl](https://img.shields.io/badge/deck.gl-9-1FB6FF?style=flat-square)](https://deck.gl)
+[![MapLibre](https://img.shields.io/badge/MapLibre-6-295DAA?style=flat-square&logo=maplibre&logoColor=white)](https://maplibre.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
 
-- **A whole day at an airport:** Munich, Istanbul and Hanoi, from real ADS-B data.
-- **Timelapse controls:** play/pause, a time slider, ±1 minute, 1x–16x speed. Keyboard: `Space`, `1`–`5`.
-- **Neon trails** that fade behind every aircraft, with a plane icon pointing where it's heading.
-- **Parked planes** stay at their gates between flights, and **ground vehicles** (tractors, mowers,
-  fire trucks) show up as small orange trucks.
-- **Flight card:** click any plane for its callsign, airline, aircraft type, registration,
+**Live demo:** https://ahmedozdogan.github.io/runway-replay/ *(not deployed yet)*
+
+<img src="docs/screenshot_web.png" alt="Runway Replay replaying Munich airport: neon approach trails, parked planes at the gates, and a flight card showing Lufthansa DLH2XN on approach with its ATC radio transcript">
+
+<img src="docs/screenshot_mobile.png" alt="Runway Replay on a phone: the same replay with the floating media-player time bar" width="260">
+
+</div>
+
+> **Status:** early and moving fast. V1 is mostly done — see the [roadmap](ROADMAP.md) and the open
+> issues. Contributions are welcome: start with [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 🎯 Why this exists
+
+Flight trackers show you *now*. Runway Replay shows you a **whole day at once**: the morning
+departure bank, the midday lull, the evening arrival rush, every taxi route and every aborted
+landing — compressed into a few minutes you can scrub through.
+
+It is also an open, readable portfolio project: real public data, a deliberately small Python
+pipeline (standard library only), and a browser app that renders thousands of positions per frame.
+Everything runs statically, so the whole thing costs nothing to host and can be forked for any
+airport.
+
+## ✨ Features
+
+- **✈️ A whole day at an airport** — Munich, Istanbul and Hanoi, from real ADS-B data.
+- **⏯️ Timelapse controls** — play/pause, time slider, ±1 minute, 1x–16x speed. Keyboard: `Space`, `1`–`5`.
+- **💫 Neon trails** that fade behind every aircraft, with a plane icon pointing where it's heading.
+- **🅿️ Parked planes** stay at their gates between flights, and **ground vehicles** (tractors,
+  mowers, fire trucks) show up as small orange trucks.
+- **🪪 Flight card** — click any plane for its callsign, airline, aircraft type, registration,
   altitude, speed and a live status ("On approach · lands in 3 min"). Tick *Follow this plane* to
   keep the camera on it.
-- **GO AROUND!** Aborted landings are detected and announced as the replay plays through them.
-- **Simulated ATC radio:** the flight card shows the conversation between the captain and ATC for
+- **🔁 GO AROUND!** — aborted landings are detected and announced as the replay plays through them.
+- **📻 Simulated ATC radio** — the flight card shows the conversation between the captain and ATC for
   each arrival, departure and go-around, written like a real transcript ("Cleared to land 36,
   THY7JK"). Messages use the flight's real callsign, runway, altitude and heading; the wording is
-  simulated, and the replay slows to 1x while the radio talks.
-- **HD radio voice (optional):** switch it on in the radio panel to hear the conversation, spoken by
-  the open-source Kokoro voice model running in your browser, through an aircraft-radio filter.
-- **Gap filling:** receivers often lose aircraft just above the runway; Runway Replay estimates the last
-  bit of the landing or the start of the takeoff roll (and says so on the card).
+  simulated.  The replay slows to 1x while the radio talks.
+- **🔊 HD radio voice (optional)** — switch it on in the radio panel to hear the conversation, spoken
+  by the open-source Kokoro voice model running in your browser, through an aircraft-radio filter.
+- **🩹 Gap filling** — receivers often lose aircraft just above the runway; Runway Replay estimates
+  the last bit of the landing or the start of the takeoff roll (and says so on the card).
+- **📱 Works on phones** — the time bar becomes a floating media-player panel.
 
-## Tech stack
+## 🧰 Tech stack
 
 | Part | Built with |
 |---|---|
@@ -43,7 +77,7 @@ taxiing to their gates, and the occasional go-around.
 | Quality | [Biome](https://biomejs.dev) (TS lint/format), [Vitest](https://vitest.dev), [Ruff](https://docs.astral.sh/ruff/), [pytest](https://pytest.org) |
 | Hosting | Static files on GitHub Pages: no backend, no database |
 
-## How it works
+## ⚙️ How it works
 
 ```
 adsb.lol daily dump  ──►  pipeline/process.py  ──►  MUC-2026-10-18.json.gz  ──►  browser
@@ -63,11 +97,11 @@ yesterday once adsb.lol has published it and force-pushes the files as a single 
 
 File formats are documented in [docs/data-format.md](docs/data-format.md).
 
-## Quick start
+## 🚀 Quick start
 
-You need Node 24 (see `web/.nvmrc`) and Python 3.11+.
+You need **Node 24** (see `web/.nvmrc`) and **Python 3.11+**.
 
-Run the site. Until you process a real day, Munich shows a few sample flights:
+**1. Run the site.** Until you process a real day, Munich shows a few sample flights:
 
 ```sh
 cd web
@@ -75,7 +109,7 @@ npm install
 npm run dev
 ```
 
-Process a real day (streams ~3.5 GB once, takes a few minutes):
+**2. Process a real day** (streams ~3.5 GB once, takes a few minutes):
 
 ```sh
 cd pipeline
@@ -84,14 +118,14 @@ pip install -e '.[dev]'
 python process.py --airport MUC IST HAN --date 2026-10-18
 ```
 
-Run the checks (CI runs the same on every pull request and push to `main`):
+**3. Run the checks** (CI runs the same on every pull request and push to `main`):
 
 ```sh
 cd pipeline && ruff check . && pytest
 cd web && npm run lint && npm test && npm run build
 ```
 
-## Project structure
+## 🗂️ Project structure
 
 ```
 pipeline/     Python: daily dump → one .json.gz per airport-day
@@ -103,26 +137,31 @@ web/src/
   sound/      HD radio voice: Kokoro in a Web Worker, aircraft-radio audio effect
   data/       airports, airline and aircraft names, radio phrases
 web/tests/unit/  Vitest unit tests, mirroring web/src/
-docs/         data format, screenshot
+docs/         data format, screenshots
 ```
 
 More detail in [CONTRIBUTING.md](CONTRIBUTING.md#project-structure).
 
-## Contributing
+## 🤝 Contributing
 
-Ideas, bug reports and pull requests are welcome. Please **comment on an issue before starting a
-feature**, so we can agree on the approach first. Issues labelled `good first issue` are a good place
-to start. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and PR guidelines, and the
+Ideas, bug reports and pull requests are welcome.
+
+1. Pick an issue — `good first issue` is a good place to start, or open one for your idea.
+2. **Comment on it before you start**, so we can agree on the approach first.
+3. Fork, branch, and keep the checks above green.
+4. Open a PR with a one-line summary of what changed and why.
+
+[CONTRIBUTING.md](CONTRIBUTING.md) has the setup, test and PR details; please also read the
 [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Privacy and downloads
+## 🔒 Privacy and downloads
 
-Runway Replay has no backend, no accounts and no tracking. The page loads the map tiles (CARTO) and the
-day's flight file. The **HD radio voice is off by default**: switching it on downloads the Kokoro
+Runway Replay has no backend, no accounts and no tracking. The page loads the map tiles (CARTO) and
+the day's flight file. The **HD radio voice is off by default**: switching it on downloads the Kokoro
 voice model (~90 MB) once from **huggingface.co**, after which the browser caches it. Speech is
 generated on your device; nothing you do is sent anywhere.
 
-## Data and license
+## 📄 Data and license
 
 Data: [adsb.lol](https://adsb.lol) (ODbL). Flight data comes from adsb.lol under the
 [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/). Published data files
