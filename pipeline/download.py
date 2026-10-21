@@ -6,9 +6,7 @@ import tarfile
 import urllib.request
 from collections.abc import Iterator
 
-RELEASE_URL = (
-    "https://github.com/adsblol/globe_history_{year}/releases/download/{tag}/{tag}.tar.{part}"
-)
+RELEASE_API = "https://api.github.com/repos/adsblol/globe_history_{year}/releases/tags/{tag}"
 
 
 class ConcatenatedStream:
@@ -31,8 +29,18 @@ class ConcatenatedStream:
 
 
 def dump_urls(date: str) -> list[str]:
+    """One day's dump is a tar split into ~2 GB parts (.tar.aa, .tar.ab, ...).
+
+    The number of parts grows with air traffic, so ask the release which ones exist instead of
+    guessing: a missing part truncates the stream mid-member ("unexpected end of data").
+    """
     tag = f"v{date.replace('-', '.')}-planes-readsb-prod-0"
-    return [RELEASE_URL.format(year=date[:4], tag=tag, part=part) for part in ("aa", "ab")]
+    with urllib.request.urlopen(RELEASE_API.format(year=date[:4], tag=tag)) as response:
+        assets = json.load(response)["assets"]
+    # Sorted: the parts only form the tar in name order, which the API doesn't promise.
+    return sorted(
+        asset["browser_download_url"] for asset in assets if f"{tag}.tar." in asset["name"]
+    )
 
 
 def stream_dump(date: str) -> Iterator[dict]:

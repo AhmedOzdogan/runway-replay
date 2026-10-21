@@ -4,8 +4,9 @@
 
 Releases: https://github.com/adsblol/globe_history_2026/releases
 
-- Tags look like `v2026.10.18-planes-readsb-prod-0`. Each is a split tar, `.tar.aa` + `.tar.ab`
-  (~3.5 GB total, worldwide). Concatenate the parts and read them as one stream.
+- Tags look like `v2026.10.18-planes-readsb-prod-0`. Each is one tar split into ~2 GB parts
+  (`.tar.aa`, `.tar.ab`, ...; ~3.5 GB total, worldwide). The number of parts grows over time, so
+  read it from the release's asset list instead of assuming. Concatenate them into one stream.
 - The tar starts with `heatmap/` files; the `traces/` come later (for 2026-10-18 they begin
   somewhere between 500 MB and 1 GB into `.tar.aa`).
 - Read it with `tarfile` in streaming mode (`mode="r|"`). Never save the dump to disk: members are
