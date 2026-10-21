@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   fillTemplate,
-  runwayFromHeading,
   spellOut,
   spokenAltitude,
   spokenCallsign,
   spokenHeading,
+  spokenRunway,
   stableIndex,
+  writtenAltitude,
+  writtenCallsign,
+  writtenHeading,
+  writtenRunway,
 } from "../../../src/flights/radio";
 
 describe("spokenCallsign", () => {
@@ -48,21 +52,21 @@ describe("spellOut", () => {
   });
 });
 
-describe("runwayFromHeading", () => {
+describe("spokenRunway", () => {
   it("spells the runway after its direction", () => {
-    expect(runwayFromHeading(290)).toBe("two niner");
-    expect(runwayFromHeading(123)).toBe("one two");
-    expect(runwayFromHeading(360)).toBe("three six");
-    expect(runwayFromHeading(80)).toBe("zero eight");
+    expect(spokenRunway(290)).toBe("two niner");
+    expect(spokenRunway(123)).toBe("one two");
+    expect(spokenRunway(360)).toBe("three six");
+    expect(spokenRunway(80)).toBe("zero eight");
   });
 
   it("calls north runway three six, never zero zero", () => {
-    expect(runwayFromHeading(4)).toBe("three six");
+    expect(spokenRunway(4)).toBe("three six");
   });
 
   it("rounds the heading to the nearest runway", () => {
-    expect(runwayFromHeading(135)).toBe("one four");
-    expect(runwayFromHeading(357)).toBe("three six");
+    expect(spokenRunway(135)).toBe("one four");
+    expect(spokenRunway(357)).toBe("three six");
   });
 });
 
@@ -191,5 +195,31 @@ describe("stableIndex", () => {
       phases.map((phase) => stableIndex(`abc123-${phase}`, 4)),
     );
     expect(indexes.size).toBeGreaterThan(1);
+  });
+});
+
+describe("written forms (for the transcript)", () => {
+  it("writes the callsign in capitals, without padding", () => {
+    expect(writtenCallsign(" thy7jk ")).toBe("THY7JK");
+  });
+
+  it("writes runways with two digits, never 00", () => {
+    expect(writtenRunway(80)).toBe("08");
+    expect(writtenRunway(262)).toBe("26");
+    expect(writtenRunway(4)).toBe("36");
+  });
+
+  it("writes altitudes in feet below 10,000 ft and as flight levels above", () => {
+    expect(writtenAltitude(2633)).toBe("2,600 ft");
+    expect(writtenAltitude(800)).toBe("800 ft");
+    expect(writtenAltitude(9960)).toBe("FL100");
+    expect(writtenAltitude(14750)).toBe("FL148");
+    expect(writtenAltitude(40)).toBe("ground level");
+  });
+
+  it("writes headings with three digits, north as 360", () => {
+    expect(writtenHeading(81.7)).toBe("082");
+    expect(writtenHeading(-98)).toBe("262");
+    expect(writtenHeading(0)).toBe("360");
   });
 });

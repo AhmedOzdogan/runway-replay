@@ -39,13 +39,17 @@ describe("radioScript for an arrival", () => {
     expect(vacate?.time).toBeGreaterThan(TOUCHDOWN);
   });
 
-  it("fills every placeholder", () => {
-    for (const line of lines) expect(line.text).not.toContain("{");
+  it("fills every placeholder, written and spoken", () => {
+    for (const line of lines) {
+      expect(line.text).not.toContain("{");
+      expect(line.spoken).not.toContain("{");
+    }
   });
 
-  it("uses the spoken callsign in every line", () => {
+  it("writes the callsign as letters and says it with the radio alphabet", () => {
     for (const line of lines) {
-      expect(line.text.toLowerCase()).toContain("tango sierra tango one");
+      expect(line.text).toContain("TST1");
+      expect(line.spoken.toLowerCase()).toContain("tango sierra tango one");
     }
   });
 
@@ -75,8 +79,12 @@ const LIFTOFF = 210;
 describe("radioScript for a departure", () => {
   const lines = radioScript(departure, AIRPORT, SEED);
 
-  it("starts with the taxi call", () => {
-    expect(lines[0].text.toLowerCase()).toContain("taxi");
+  it("talks about taxiing before the take-off clearance", () => {
+    const takeoff = lines.findIndex((line) =>
+      line.text.includes("cleared for take-off"),
+    );
+    const beforeTakeoff = lines.slice(0, takeoff);
+    expect(beforeTakeoff.some((line) => /taxi/i.test(line.text))).toBe(true);
   });
 
   it("clears the plane for take-off before lift-off", () => {
@@ -142,7 +150,10 @@ describe("radioScript for a go-around", () => {
 
   it("climbs to where the plane really went, not its lowest point", () => {
     const climb = lines.find((line) => /climb to/i.test(line.text));
-    if (climb) expect(climb.text).toContain("five thousand feet");
+    if (climb) {
+      expect(climb.text).toContain("5,000 ft");
+      expect(climb.spoken).toContain("five thousand feet");
+    }
   });
 
   it("still lands and vacates at the end", () => {
@@ -174,9 +185,14 @@ describe("radioScript for other flights", () => {
 
 describe("linesSoFar and isRadioTalking", () => {
   const lines = [
-    { time: 100, speaker: "ATC" as const, text: "first" },
-    { time: 106, speaker: "PILOT" as const, text: "readback" },
-    { time: 500, speaker: "ATC" as const, text: "later" },
+    { time: 100, speaker: "ATC" as const, text: "first", spoken: "first" },
+    {
+      time: 106,
+      speaker: "PILOT" as const,
+      text: "readback",
+      spoken: "readback",
+    },
+    { time: 500, speaker: "ATC" as const, text: "later", spoken: "later" },
   ];
 
   it("shows only the lines said up to now", () => {
@@ -198,8 +214,13 @@ describe("linesSoFar and isRadioTalking", () => {
 
 describe("linesPlayedThrough", () => {
   const lines = [
-    { time: 100, speaker: "ATC" as const, text: "first" },
-    { time: 106, speaker: "PILOT" as const, text: "readback" },
+    { time: 100, speaker: "ATC" as const, text: "first", spoken: "first" },
+    {
+      time: 106,
+      speaker: "PILOT" as const,
+      text: "readback",
+      spoken: "readback",
+    },
   ];
 
   it("returns the lines crossed while playing forward", () => {
@@ -218,5 +239,21 @@ describe("linesPlayedThrough", () => {
   it("returns nothing when going backwards or jumping with the slider", () => {
     expect(linesPlayedThrough(lines, 110, 99)).toEqual([]);
     expect(linesPlayedThrough(lines, 0, 5000)).toEqual([]);
+  });
+});
+
+describe("every radio variant", () => {
+  // 200 seeds reach every variant of every phase, not just the one seed 42 picks.
+  it("is filled in and names the callsign, for arrivals, departures and go-arounds", () => {
+    for (const flight of [arrival, departure, goAround]) {
+      for (let seed = 0; seed < 200; seed++) {
+        for (const line of radioScript(flight, AIRPORT, seed)) {
+          expect(line.text).not.toContain("{");
+          expect(line.spoken).not.toContain("{");
+          expect(line.text).toContain("TST1");
+          expect(line.spoken.toLowerCase()).toContain("tango sierra tango one");
+        }
+      }
+    }
   });
 });

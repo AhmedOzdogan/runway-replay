@@ -38,13 +38,36 @@ export function spokenCallsign(text: string): string {
   return rest ? `${airlineRadioName} ${rest}` : airlineRadioName;
 }
 
+/** "thy7jk " -> "THY7JK": the callsign as written in a transcript. */
+export function writtenCallsign(callsign: string): string {
+  return callsign.trim().toUpperCase();
+}
+
 /**
- * 262 -> "two six": runways are named after their direction ÷ 10, always with two digits
- * (ICAO keeps the leading zero: 80 -> "zero eight"). North is runway 36, never 00.
+ * 262 -> "26": runways are named after their direction ÷ 10, always with two digits
+ * (ICAO keeps the leading zero: 80 -> "08"). North is runway 36, never 00.
  */
-export function runwayFromHeading(heading: number): string {
+export function writtenRunway(heading: number): string {
   const runway = Math.round(heading / 10) || 36;
-  return spellOut(String(runway).padStart(2, "0"));
+  return String(runway).padStart(2, "0");
+}
+
+/** 262 -> "two six", 80 -> "zero eight": the runway as said on the radio. */
+export function spokenRunway(heading: number): string {
+  return spellOut(writtenRunway(heading));
+}
+
+/** Rounded to the nearest hundred feet, so the written and spoken forms always agree. */
+function roundedAltitude(feet: number): number {
+  return Math.round(feet / 100) * 100;
+}
+
+/** 2633 -> "2,600 ft", 12000 -> "FL120", 0 -> "ground level". */
+export function writtenAltitude(feet: number): string {
+  const rounded = roundedAltitude(feet);
+  if (rounded >= TRANSITION_ALTITUDE_FT) return `FL${rounded / 100}`;
+  if (rounded <= 0) return "ground level";
+  return `${rounded.toLocaleString("en")} ft`;
 }
 
 /**
@@ -52,14 +75,14 @@ export function runwayFromHeading(heading: number): string {
  * Rounded to the nearest hundred feet first, so every decision is made on the value we say.
  */
 export function spokenAltitude(feet: number): string {
-  const roundedFeet = Math.round(feet / 100) * 100;
-  if (roundedFeet >= TRANSITION_ALTITUDE_FT) {
-    return `flight level ${spellOut(String(roundedFeet / 100))}`;
+  const rounded = roundedAltitude(feet);
+  if (rounded >= TRANSITION_ALTITUDE_FT) {
+    return `flight level ${spellOut(String(rounded / 100))}`;
   }
-  if (roundedFeet <= 0) return "ground level";
+  if (rounded <= 0) return "ground level";
 
-  const thousands = Math.floor(roundedFeet / 1000);
-  const hundreds = Math.floor((roundedFeet % 1000) / 100);
+  const thousands = Math.floor(rounded / 1000);
+  const hundreds = Math.floor((rounded % 1000) / 100);
   const parts = [
     thousands > 0 ? `${spellOut(String(thousands))} thousand` : "",
     hundreds > 0 ? `${spellOut(String(hundreds))} hundred` : "",
@@ -67,10 +90,15 @@ export function spokenAltitude(feet: number): string {
   return `${parts.filter(Boolean).join(" ")} feet`;
 }
 
-/** 82 -> "zero eight two": always three digits, 0–360, and north is "three six zero". */
-export function spokenHeading(heading: number): string {
+/** 82 -> "082": always three digits, 0–360, and north is "360". */
+export function writtenHeading(heading: number): string {
   const degrees = (Math.round(heading) + 360) % 360 || 360;
-  return spellOut(String(degrees).padStart(3, "0"));
+  return String(degrees).padStart(3, "0");
+}
+
+/** 82 -> "zero eight two": the heading as said on the radio. */
+export function spokenHeading(heading: number): string {
+  return spellOut(writtenHeading(heading));
 }
 
 /** "Hello {name}" + { name: "Ada" } -> "Hello Ada". Unknown placeholders become "". */

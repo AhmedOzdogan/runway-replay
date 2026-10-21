@@ -8,11 +8,15 @@ import { ALTITUDE, type Flight, TIME } from "../types/flight";
 import { planeAt } from "./planes";
 import {
   fillTemplate,
-  runwayFromHeading,
   spokenAltitude,
   spokenCallsign,
   spokenHeading,
+  spokenRunway,
   stableIndex,
+  writtenAltitude,
+  writtenCallsign,
+  writtenHeading,
+  writtenRunway,
 } from "./radio";
 import { classifyFlight, type FlightKind } from "./status";
 
@@ -42,7 +46,10 @@ const MIN_SECONDS_BETWEEN_PHASES = 30;
 export interface RadioLine {
   time: number;
   speaker: Speaker;
+  /** As written in a transcript: "Cleared to land 36, THY7JK." */
   text: string;
+  /** As said on the radio: "Cleared to land three six, Turkish seven juliett kilo." */
+  spoken: string;
 }
 
 /**
@@ -185,18 +192,23 @@ function linesForPhase(
   const planeAtRunway = planeAt(flight, eventTime);
   if (!plane || !planeAtRunway) return [];
 
-  const values = {
-    callsign: spokenCallsign(
-      flight.callsign ?? flight.registration ?? flight.icao,
-    ),
+  // The same details twice: written for the transcript, spelled out for the voice.
+  const callsign = flight.callsign ?? flight.registration ?? flight.icao;
+  const climbOrCurrentAltitude =
+    phase === "goAround" ? goAroundClimbAltitude(flight, time) : plane.altitude;
+  const written = {
+    callsign: writtenCallsign(callsign),
     airport: airport.name,
-    runway: runwayFromHeading(planeAtRunway.heading),
+    runway: writtenRunway(planeAtRunway.heading),
+    altitude: writtenAltitude(climbOrCurrentAltitude),
+    heading: writtenHeading(plane.heading),
+  };
+  const spoken = {
+    callsign: spokenCallsign(callsign),
+    airport: airport.name,
+    runway: spokenRunway(planeAtRunway.heading),
     // After a go-around ATC gives the altitude to climb *to*, not the low point it's at.
-    altitude: spokenAltitude(
-      phase === "goAround"
-        ? goAroundClimbAltitude(flight, time)
-        : plane.altitude,
-    ),
+    altitude: spokenAltitude(climbOrCurrentAltitude),
     heading: spokenHeading(plane.heading),
   };
 
@@ -212,7 +224,8 @@ function linesForPhase(
   return exchange.map((phrase, index) => ({
     time: time + index * LINE_GAP_SECONDS,
     speaker: phrase.speaker,
-    text: fillTemplate(phrase.text, values),
+    text: fillTemplate(phrase.text, written),
+    spoken: fillTemplate(phrase.text, spoken),
   }));
 }
 
