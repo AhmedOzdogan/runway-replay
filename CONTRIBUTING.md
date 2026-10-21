@@ -39,21 +39,42 @@ On macOS with the python.org installer, if you get `CERTIFICATE_VERIFY_FAILED`, 
 pipeline/                 Python: adsb.lol daily dump -> one .json.gz per airport-day
   process.py              CLI entry point
   download.py             stream the dump (never saved to disk)
-  filter.py, resample.py  keep points near the airport, split into flights, thin to 5 s
+  filter.py, resample.py  keep points near the airport (with callsign and ADS-B category),
+                          split into flights, thin to 5 s
 web/src/
   main.tsx                React entry point: renders <App /> into index.html's #root
   App.tsx                 page layout and app state (airport, selected plane, follow)
-  components/             UI: Header, Footer, AirportPicker, TimeBar, FlightCard, GoAroundBanner, ToggleButton
+  components/             UI: Header, Footer, AirportPicker, TimeBar, FlightCard, RadioTranscript,
+                          GoAroundBanner, ToggleButton
   map/                    ReplayMap (MapLibre via react-map-gl), DeckOverlay, deck.gl layers
-  hooks/                  usePlayback (clock + keyboard), useFlights (loading), useGoAroundAlert
-  flights/                pure flight logic: positions, parking, estimates, go-arounds, status text, radio
-  data/                   airport list, airline/aircraft names, loading the .json.gz files
+  hooks/                  usePlayback (clock + keyboard), useFlights (loading), useGoAroundAlert,
+                          useRadioVoice (speaks radio lines with the HD voice)
+  flights/                pure flight logic: positions, parking, estimates, go-arounds, ground vehicles,
+                          status text, radio (radio.ts: written/spoken forms, radioScript.ts: conversations)
+  sound/                  HD radio voice: Kokoro in a Web Worker (kokoro.worker.ts, kokoroClient.ts),
+                          the radio audio effect (radioEffect.ts), and its pure logic (radioVoicePlan.ts)
+  data/                   airport list, airline/aircraft/radio names, radio phrases, loading the .json.gz files
   types/                  data types (Flight, Point, Plane, Airport)
-  utils/                  small helpers (formatting, distance)
+  utils/                  small helpers (formatting, distance, a serial task queue)
+  assets/                 the header logo in 1x/2x/3x
   style.css               Tailwind import + theme tokens (colours, glow, animation)
-web/tests/unit/           Vitest unit tests, mirroring src/ (e.g. flights/radio.test.ts tests src/flights/radio.ts)
+web/tests/unit/           Vitest unit tests, mirroring src/ (flights/, sound/, utils/; e.g.
+                          flights/radio.test.ts tests src/flights/radio.ts)
   helpers.ts              shared test helpers (a test airport, flightThrough)
 ```
+
+## Radio messages
+
+The radio conversation is simulated, but it's built on real flights, so two rules apply when you
+add or change phrases in `web/src/data/radioPhrases.ts`:
+
+- **Only use the five real details:** `{callsign}`, `{airport}`, `{runway}`, `{altitude}`,
+  `{heading}`. No invented winds, frequencies, sequence numbers or reasons ("unstable approach").
+- **No emergencies** (mayday, pan-pan, squawk 7700…): they would tell a false story about a real
+  airline and crew.
+
+Every pilot readback must repeat the instruction it answers, and every line must contain
+`{callsign}`; the tests in `tests/unit/flights/radioScript.test.ts` check all variants.
 
 ## Tests and lint
 

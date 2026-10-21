@@ -91,10 +91,12 @@ cd web && npm run lint && npm test && npm run build
 ```
 pipeline/     Python: daily dump → one .json.gz per airport-day
 web/src/
-  components/ React UI (Header, Footer, TimeBar, FlightCard, …)
+  components/ React UI (Header, Footer, TimeBar, FlightCard, RadioTranscript, …)
   map/        MapLibre map and deck.gl layers
-  hooks/      playback clock, data loading, go-around alerts
-  flights/    pure flight logic (positions, go-arounds, radio…)
+  hooks/      playback clock, data loading, go-around alerts, radio voice
+  flights/    pure flight logic (positions, go-arounds, ground vehicles, radio conversation…)
+  sound/      HD radio voice: Kokoro in a Web Worker, aircraft-radio audio effect
+  data/       airports, airline and aircraft names, radio phrases
 web/tests/unit/  Vitest unit tests, mirroring web/src/
 docs/         data format, screenshot
 ```
