@@ -81,7 +81,7 @@ export function TimeBar({
           )}
           <input
             type="range"
-            className="absolute inset-0 w-full cursor-pointer opacity-0"
+            className="absolute inset-0 w-full cursor-pointer appearance-none opacity-0 [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:border-0 [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:appearance-none"
             min={0}
             max={LAST_SECOND}
             step={1}
