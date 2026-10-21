@@ -23,7 +23,9 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [ ] Real origin/destination on the flight card (route database)
 
 ## V3: share it
-- [ ] Sounds (off by default): whoosh on takeoff, ding on landing
+- [x] Simulated ATC radio conversation in the flight card (arrivals, departures, go-arounds)
+- [x] Optional HD radio voice (Kokoro, in the browser) through an aircraft-radio filter
+- [ ] Radio for overflights and ground movements
 - [ ] Export a 60-second timelapse (video/GIF)
 - [ ] Date picker and more airports
 - [ ] Daily GitHub Action that processes yesterday's data
