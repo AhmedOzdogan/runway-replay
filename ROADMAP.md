@@ -12,6 +12,8 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [x] Parked planes at the gates between flights
 - [x] Estimated landings and takeoffs where the receivers lose the aircraft
 - [x] Airport ground vehicles (ADS-B category C1/C2) shown as orange trucks
+- [x] CI: lint and tests for Python and TypeScript on every PR and push to `main`
+- [x] Daily GitHub Action that processes yesterday's data into the `data` branch
 - [ ] "Follow your flight": search by callsign
 - [ ] Deploy to GitHub Pages
 
@@ -28,6 +30,5 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 
 ## V3: share it
 - [ ] Export a 60-second timelapse (video/GIF)
-- [ ] Date picker and more airports
-- [ ] Daily GitHub Action that processes yesterday's data
+- [ ] Date picker and more airports (keep the last N days on the `data` branch, with an index of dates)
 - [ ] Local time per airport (the clock is UTC today)

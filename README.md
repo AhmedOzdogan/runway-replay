@@ -53,8 +53,13 @@ adsb.lol daily dump  ──►  pipeline/process.py  ──►  MUC-2026-10-18.j
 ```
 
 The pipeline runs once per airport-day. It streams the worldwide dump without saving it, keeps only
-aircraft within 50 km of each airport and below 15,000 ft, and writes one small file per airport.
-The browser loads that file and does the rest: positions, parking, go-arounds and gap filling.
+aircraft within 50 km of each airport and below 15,000 ft, and writes one small file per airport,
+plus `latest.json` naming the day. The browser loads that file and does the rest: positions,
+parking, go-arounds and gap filling.
+
+**Daily update:** every night at 04:30 UTC, a GitHub Action (`.github/workflows/data.yml`) processes
+yesterday once adsb.lol has published it and force-pushes the files as a single commit to the orphan
+`data` branch. Only the newest day is kept, so the repository doesn't grow.
 
 File formats are documented in [docs/data-format.md](docs/data-format.md).
 
@@ -79,7 +84,7 @@ pip install -e '.[dev]'
 python process.py --airport MUC IST HAN --date 2026-10-18
 ```
 
-Run the checks:
+Run the checks (CI runs the same on every pull request and push to `main`):
 
 ```sh
 cd pipeline && ruff check . && pytest
