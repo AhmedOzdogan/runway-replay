@@ -31,11 +31,6 @@ function brightenRunways(event: MapLibreEvent) {
   map.setLayerZoomRange("aeroway-runway", 9, 24);
   map.setPaintProperty("aeroway-runway", "line-color", "#3d4b5f");
   map.setPaintProperty("aeroway-taxiway", "line-color", "#2a3442");
-  map.setFilter("aeroway-runway", [
-    "all",
-    ["==", "$type", "LineString"],
-    ["==", "class", "runway"],
-  ]);
 }
 
 function planeTooltip({ object }: PickingInfo<Plane>) {
