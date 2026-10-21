@@ -21,7 +21,7 @@ No backend, no database, no API keys: one static site and one nightly data file.
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
 
-**Live demo:** https://ahmedozdogan.github.io/runway-replay/ *(not deployed yet)*
+**Live demo:** https://ahmedozdogan.github.io/runway-replay/
 
 <img src="docs/screenshot_web.png" alt="Runway Replay replaying Munich airport: neon approach trails, parked planes at the gates, and a flight card showing Lufthansa DLH2XN on approach with its ATC radio transcript">
 

@@ -1,9 +1,13 @@
 name: Deploy to GitHub Pages
 
-# Disabled for now: no deploys yet. To enable, remove `if: false` below and add:
-#   push:
-#     branches: [main]
+# Deploys on every push to main, and again after each nightly data run, so the newest day on the
+# `data` branch (see data.yml) actually reaches the site: the files are copied in at build time.
 on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["Daily data"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,7 +21,8 @@ concurrency:
 
 jobs:
   deploy:
-    if: false
+    # A failed data run leaves the `data` branch untouched; nothing to redeploy.
+    if: github.event.workflow_run.conclusion != 'failure'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
