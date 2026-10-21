@@ -1,4 +1,4 @@
-// Who runs SkyReplay, shown in the "About & help" panel (contact and legal part).
+// Who runs Runway Replay, shown in the "About & help" panel (contact and legal part).
 // Change these in one place.
 
 export const SITE_OWNER = {
@@ -8,4 +8,4 @@ export const SITE_OWNER = {
   linkedin: "https://www.linkedin.com/in/ahmedozdogan/",
 };
 
-export const REPO_URL = "https://github.com/AhmedOzdogan/skyreplay";
+export const REPO_URL = "https://github.com/AhmedOzdogan/runway-replay";

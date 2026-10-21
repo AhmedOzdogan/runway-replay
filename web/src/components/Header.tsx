@@ -27,7 +27,7 @@ export function Header({
           srcSet={`${logo1x} 1x, ${logo2x} 2x, ${logo3x} 3x`}
           width={101}
           height={28}
-          alt="SkyReplay"
+          alt="Runway Replay"
         />
       </h1>
       <AirportPicker
@@ -41,7 +41,7 @@ export function Header({
       <button
         type="button"
         onClick={onOpenHelp}
-        aria-label="About SkyReplay and how to use it"
+        aria-label="About Runway Replay and how to use it"
         title="About & help"
         className="flex size-8 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-white/5 hover:text-neon"
       >

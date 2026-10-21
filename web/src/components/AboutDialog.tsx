@@ -49,7 +49,7 @@ function Key({ children }: { children: ReactNode }) {
 }
 
 /**
- * "About & help": what SkyReplay is, how to use it, what's real and what's simulated, privacy,
+ * "About & help": what Runway Replay is, how to use it, what's real and what's simulated, privacy,
  * the disclaimer, credits and contact. Uses the browser's native <dialog>, which handles focus,
  * the Esc key and screen readers by itself.
  */
@@ -96,10 +96,10 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
       </div>
 
       <div className="px-5 pb-6 leading-relaxed text-fg/90">
-        <Heading id="about-about">What is SkyReplay?</Heading>
+        <Heading id="about-about">What is Runway Replay?</Heading>
         <p>
-          SkyReplay replays a whole day of real air traffic at an airport as a
-          timelapse: every arrival, departure, taxiing plane and even the
+          Runway Replay replays a whole day of real air traffic at an airport as
+          a timelapse: every arrival, departure, taxiing plane and even the
           airport's ground vehicles, drawn as neon trails on a dark map. It's a
           hobby project, made for fun and for learning.
         </p>
@@ -155,11 +155,11 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
 
         <Heading id="about-legal">Privacy</Heading>
         <p>
-          No cookies, no tracking, no analytics, no ads, no accounts. SkyReplay
-          doesn't collect any personal data. The only thing kept in your browser
-          is the radio voice model, and only if you switch the voice on (so it
-          isn't downloaded again next time; clearing your browser's site data
-          removes it).
+          No cookies, no tracking, no analytics, no ads, no accounts. Runway
+          Replay doesn't collect any personal data. The only thing kept in your
+          browser is the radio voice model, and only if you switch the voice on
+          (so it isn't downloaded again next time; clearing your browser's site
+          data removes it).
         </p>
         <p className="mt-2">Your browser only talks to:</p>
         <ul className="list-disc space-y-1 pl-5">
@@ -179,8 +179,8 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
 
         <Heading>Disclaimer</Heading>
         <p>
-          SkyReplay is a non-commercial hobby project. It is not affiliated with
-          any airline, airport, air navigation service provider, aircraft
+          Runway Replay is a non-commercial hobby project. It is not affiliated
+          with any airline, airport, air navigation service provider, aircraft
           manufacturer or adsb.lol. The data may be incomplete or wrong, and
           parts of the replay are estimated or simulated (see above). Don't use
           it for navigation, safety or any real-world decision. It's provided as
@@ -214,13 +214,13 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
           </li>
           <li>
             Code:{" "}
-            <ExternalLink href={REPO_URL}>SkyReplay on GitHub</ExternalLink>,
-            MIT license. Contributions are welcome.
+            <ExternalLink href={REPO_URL}>Runway Replay on GitHub</ExternalLink>
+            , MIT license. Contributions are welcome.
           </li>
         </ul>
 
         <Heading>Contact</Heading>
-        <p>SkyReplay is made by {SITE_OWNER.name}.</p>
+        <p>Runway Replay is made by {SITE_OWNER.name}.</p>
         <ul className="mt-2 space-y-1.5">
           <li>
             <a

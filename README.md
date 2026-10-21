@@ -1,11 +1,11 @@
-# SkyReplay
+# Runway Replay
 
 Replay one airport's full day of real flights as a timelapse: neon trails on a dark map, planes
 taxiing to their gates, and the occasional go-around.
 
-![SkyReplay showing Munich airport: parked planes at the gates, a selected aircraft taxiing with its info card open](docs/screenshot.png)
+![Runway Replay showing Munich airport: parked planes at the gates, a selected aircraft taxiing with its info card open](docs/screenshot.png)
 
-**Live demo:** https://ahmedozdogan.github.io/skyreplay/ (not deployed yet)
+**Live demo:** https://ahmedozdogan.github.io/runway-replay/ (not deployed yet)
 
 > **Status:** early and moving fast. V1 is mostly done; see the [roadmap](ROADMAP.md) and the open
 > issues. Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -27,7 +27,7 @@ taxiing to their gates, and the occasional go-around.
   simulated, and the replay slows to 1x while the radio talks.
 - **HD radio voice (optional):** switch it on in the radio panel to hear the conversation, spoken by
   the open-source Kokoro voice model running in your browser, through an aircraft-radio filter.
-- **Gap filling:** receivers often lose aircraft just above the runway; SkyReplay estimates the last
+- **Gap filling:** receivers often lose aircraft just above the runway; Runway Replay estimates the last
   bit of the landing or the start of the takeoff roll (and says so on the card).
 
 ## Tech stack
@@ -117,7 +117,7 @@ to start. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and PR guideli
 
 ## Privacy and downloads
 
-SkyReplay has no backend, no accounts and no tracking. The page loads the map tiles (CARTO) and the
+Runway Replay has no backend, no accounts and no tracking. The page loads the map tiles (CARTO) and the
 day's flight file. The **HD radio voice is off by default**: switching it on downloads the Kokoro
 voice model (~90 MB) once from **huggingface.co**, after which the browser caches it. Speech is
 generated on your device; nothing you do is sent anywhere.

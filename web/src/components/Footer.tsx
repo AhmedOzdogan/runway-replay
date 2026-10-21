@@ -15,7 +15,7 @@ export function Footer({ onOpenLegal }: { onOpenLegal: () => void }) {
       >
         <TbBrandGithub size={16} aria-hidden="true" />
         <span>
-          SkyReplay is open source <span className="text-muted">(MIT)</span>
+          Runway Replay is open source <span className="text-muted">(MIT)</span>
         </span>
       </a>
       <span className="flex flex-wrap items-center gap-x-4 gap-y-1">

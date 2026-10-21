@@ -1,6 +1,6 @@
 {
-  "name": "SkyReplay",
-  "short_name": "SkyReplay",
+  "name": "Runway Replay",
+  "short_name": "Runway Replay",
   "description": "Replay one airport's full day of real flights as a timelapse.",
   "start_url": ".",
   "display": "standalone",
