@@ -15,7 +15,7 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [x] CI: lint and tests for Python and TypeScript on every PR and push to `main`
 - [x] Daily GitHub Action that processes yesterday's data into the `data` branch
 - [ ] "Follow your flight": search by callsign
-- [ ] Deploy to GitHub Pages
+- [x] Deploy to GitHub Pages
 
 ## V2: make it a game
 - [x] "GO AROUND!" moments: detect aborted landings, show a banner
