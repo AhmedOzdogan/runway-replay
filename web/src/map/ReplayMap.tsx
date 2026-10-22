@@ -73,7 +73,12 @@ export function ReplayMap({
 
   const followPosition = isFollowing ? selectedPlane?.position : undefined;
   useEffect(() => {
-    if (followPosition) mapRef.current?.jumpTo({ center: followPosition });
+    const map = mapRef.current;
+    if (!map || !followPosition) return;
+    // Re-centering cancels MapLibre's own camera animation (a wheel zoom eases over a few hundred
+    // ms), so stay out of the way while the user drives the camera: this runs again next frame.
+    if (map.isZooming() || map.isRotating() || map.isMoving()) return;
+    map.jumpTo({ center: followPosition });
   }, [followPosition]);
 
   return (
