@@ -78,7 +78,7 @@ Every pilot readback must repeat the instruction it answers, and every line must
 
 ## Tests and lint
 
-CI (`.github/workflows/ci.yml`) runs these on every pull request and push to `main`:
+CI (`.github/workflows/ci.yml`) runs these on every pull request and on pushes to `main` and `develop`:
 
 ```sh
 cd pipeline && ruff check . && ruff format --check . && pytest
@@ -90,7 +90,10 @@ recommended extensions (`.vscode/extensions.json`) to lint and format on save.
 
 ## Branches and PRs
 
-- Branch from `main`: `feat/<short-name>`, `fix/<short-name>`, `docs/<short-name>`.
+- Branch from `develop`: `feat/<short-name>`, `fix/<short-name>`, `docs/<short-name>`.
+- Open the PR against `develop`. `main` is production: it only receives `develop`, by pull request,
+  and deploys to the live site once CI is green.
+- Both branches are protected, so nothing is pushed to them directly.
 - One focused change per PR; link the issue (`Closes #12`).
 - Add screenshots or a GIF for visual changes.
 - Don't commit processed `*.json.gz` data files: the daily workflow publishes them to the `data` branch.

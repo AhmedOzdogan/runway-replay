@@ -97,6 +97,24 @@ yesterday once adsb.lol has published it and force-pushes the files as a single 
 
 File formats are documented in [docs/data-format.md](docs/data-format.md).
 
+## 🔄 CI/CD
+
+| Branch | What it is |
+|---|---|
+| `develop` | where work lands: every feature and fix is merged here by pull request |
+| `main` | production: what the live site serves |
+| `data` | the processed day, force-pushed nightly by the data workflow (no code) |
+
+- **CI** (`.github/workflows/ci.yml`) runs Ruff, pytest, Biome, Vitest and the production build on
+  every pull request and on every push to `main` and `develop`.
+- **CD** (`.github/workflows/pages.yml`) waits for CI to pass on `main`, rebuilds the site with the
+  newest day copied in from the `data` branch, and deploys it to GitHub Pages. A red build never
+  reaches the live site.
+- The nightly data run triggers the same deploy, so the site follows the newest day without a code
+  change.
+
+Both branches are protected: changes arrive by pull request, with CI green.
+
 ## 🚀 Quick start
 
 You need **Node 24** (see `web/.nvmrc`) and **Python 3.11+**.
@@ -118,7 +136,7 @@ pip install -e '.[dev]'
 python process.py --airport MUC IST HAN --date 2026-10-18
 ```
 
-**3. Run the checks** (CI runs the same on every pull request and push to `main`):
+**3. Run the checks** (CI runs the same on every pull request and push):
 
 ```sh
 cd pipeline && ruff check . && pytest
@@ -148,8 +166,11 @@ Ideas, bug reports and pull requests are welcome.
 
 1. Pick an issue — `good first issue` is a good place to start, or open one for your idea.
 2. **Comment on it before you start**, so we can agree on the approach first.
-3. Fork, branch, and keep the checks above green.
-4. Open a PR with a one-line summary of what changed and why.
+3. Branch from **`develop`** (`feat/…`, `fix/…`, `docs/…`) and keep the checks above green.
+4. Open a PR **into `develop`** with a one-line summary of what changed and why.
+
+`main` is production and only ever receives `develop` by pull request, so nothing goes live before
+CI is green.
 
 [CONTRIBUTING.md](CONTRIBUTING.md) has the setup, test and PR details; please also read the
 [Code of Conduct](CODE_OF_CONDUCT.md).
