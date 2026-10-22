@@ -13,6 +13,7 @@ import { useGoAroundAlert } from "./hooks/useGoAroundAlert";
 import { usePlayback } from "./hooks/usePlayback";
 import { useRadioVoice } from "./hooks/useRadioVoice";
 import { ReplayMap } from "./map/ReplayMap";
+import { type Flight, TIME } from "./types/flight";
 
 const DEFAULT_AIRPORT = "MUC";
 
@@ -65,6 +66,12 @@ export function App() {
     selectPlane(null);
   }
 
+  function pickFlight(flight: Flight) {
+    playback.seek(flight.points[0][TIME]);
+    selectPlane(flight.icao);
+    setIsFollowing(true);
+  }
+
   return (
     <div className="flex h-full flex-col">
       <Header
@@ -72,6 +79,8 @@ export function App() {
         status={status}
         onSelectAirport={selectAirport}
         onOpenHelp={() => setAboutSection("about")}
+        flights={flights}
+        onPickFlight={pickFlight}
       />
       <main className="relative flex-1">
         <ReplayMap

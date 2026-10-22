@@ -6,13 +6,17 @@ import logo1x from "../assets/logo@1x.png";
 import logo2x from "../assets/logo@2x.png";
 import logo3x from "../assets/logo@3x.png";
 import { AIRPORTS } from "../data/airports";
+import type { Flight } from "../types/flight";
 import { AirportPicker } from "./AirportPicker";
+import { FlightSearch } from "./FlightSearch";
 
 interface HeaderProps {
   airportCode: string;
   status: string;
   onSelectAirport: (code: string) => void;
   onOpenHelp: () => void;
+  flights: Flight[];
+  onPickFlight: (flight: Flight) => void;
 }
 
 export function Header({
@@ -20,6 +24,8 @@ export function Header({
   status,
   onSelectAirport,
   onOpenHelp,
+  flights,
+  onPickFlight,
 }: HeaderProps) {
   return (
     <header className="flex flex-wrap items-center gap-4 border-b border-line bg-panel px-4 py-2.5">
@@ -44,6 +50,7 @@ export function Header({
         selectedCode={airportCode}
         onSelect={onSelectAirport}
       />
+      <FlightSearch flights={flights} onPick={onPickFlight} />
       <span role="status" className="ml-auto text-[13px] text-muted">
         {status}
       </span>
