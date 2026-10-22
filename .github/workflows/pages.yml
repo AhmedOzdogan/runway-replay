@@ -1,12 +1,11 @@
 name: Deploy to GitHub Pages
 
-# Deploys on every push to main, and again after each nightly data run, so the newest day on the
-# `data` branch (see data.yml) actually reaches the site: the files are copied in at build time.
+# Runs after CI passes on main, and after each nightly data run, so the newest day on the `data`
+# branch (see data.yml) reaches the site: the files are copied in at build time. Chaining it to CI
+# instead of to the push itself means a commit that fails the tests never goes live.
 on:
-  push:
-    branches: [main]
   workflow_run:
-    workflows: ["Daily data"]
+    workflows: ["CI", "Daily data"]
     types: [completed]
   workflow_dispatch:
 
@@ -21,8 +20,13 @@ concurrency:
 
 jobs:
   deploy:
-    # A failed data run leaves the `data` branch untouched; nothing to redeploy.
-    if: github.event.workflow_run.conclusion != 'failure'
+    # Only a green run of main deploys: CI also runs on pull requests (head_branch is their own
+    # branch, which a fork can call "main" too), and a failed data run has nothing new to publish.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event != 'pull_request')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
