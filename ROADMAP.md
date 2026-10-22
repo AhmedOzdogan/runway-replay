@@ -14,13 +14,15 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [x] Airport ground vehicles (ADS-B category C1/C2) shown as orange trucks
 - [x] CI: lint and tests for Python and TypeScript on every PR and push to `main`
 - [x] Daily GitHub Action that processes yesterday's data into the `data` branch
-- [ ] "Follow your flight": search by callsign
+- [x] "Follow your flight": search by callsign
 - [x] Deploy to GitHub Pages
 
 ## V2: make it a game
 - [x] "GO AROUND!" moments: detect aborted landings, show a banner
 - [x] Simulated ATC radio conversation in the flight card (arrivals, departures, go-arounds)
 - [x] Optional HD radio voice (Kokoro, in the browser) through an aircraft-radio filter
+- [ ] Airline logos in the search results and the flight card (THY, DLH, …), bundled as small
+      SVGs per ICAO airline code; check the licence of every logo before adding it
 - [ ] Radio for overflights and ground movements
 - [ ] Zoom the camera in on a go-around
 - [ ] Spotter badges: A380, 747, military, private jets
