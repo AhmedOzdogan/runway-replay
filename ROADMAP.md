@@ -21,8 +21,12 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [x] "GO AROUND!" moments: detect aborted landings, show a banner
 - [x] Simulated ATC radio conversation in the flight card (arrivals, departures, go-arounds)
 - [x] Optional HD radio voice (Kokoro, in the browser) through an aircraft-radio filter
-- [ ] Airline logos in the search results and the flight card (THY, DLH, …), bundled as small
-      SVGs per ICAO airline code; check the licence of every logo before adding it
+- [ ] Airline colours in the search results and the flight card: one accent per ICAO airline code
+      (a dot or a left border), drawn by us from the airline's livery. Deliberately not logos:
+      naming an airline is referential use and fine, but shipping its logo file copies artwork we
+      can't relicense under MIT (see the Skiplagged verdict, where the damages were the copyright
+      claim on the logo, not the trademark one). If images ever happen, only logos with an explicit
+      free licence, each one recorded with its source
 - [ ] Radio for overflights and ground movements
 - [ ] Zoom the camera in on a go-around
 - [ ] Spotter badges: A380, 747, military, private jets
