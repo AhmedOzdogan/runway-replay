@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   TbBuildingBroadcastTower,
   TbLoader2,
@@ -9,6 +9,7 @@ import {
 import type { RadioLine } from "../flights/radioScript";
 import type { RadioVoice } from "../hooks/useRadioVoice";
 import { formatClock } from "../utils/format";
+import { hasAcceptedVoice, VoiceConsentDialog } from "./VoiceConsentDialog";
 
 interface RadioTranscriptProps {
   /** The lines said so far, oldest first. */
@@ -95,33 +96,48 @@ function VoiceButton({
   voice: Pick<RadioVoice, "status" | "progress" | "toggle">;
 }) {
   const { status, progress, toggle } = voice;
+  // Switching the voice on the first time downloads ~92 MB, so ask before spending someone's data.
+  const [isAsking, setIsAsking] = useState(false);
   return (
-    <button
-      type="button"
-      aria-pressed={status === "on"}
-      aria-label={VOICE_LABELS[status]}
-      title={VOICE_LABELS[status]}
-      onClick={toggle}
-      disabled={status === "loading"}
-      className="flex h-6 cursor-pointer items-center gap-1 rounded-full px-1.5 text-[10px] text-muted transition-colors hover:bg-white/5 hover:text-fg disabled:cursor-wait aria-pressed:text-neon"
-    >
-      {status === "loading" ? (
-        <>
-          <TbLoader2
-            size={14}
-            className="motion-safe:animate-spin"
-            aria-hidden="true"
-          />
-          {progress}%
-        </>
-      ) : status === "on" ? (
-        <TbVolume size={16} aria-hidden="true" />
-      ) : (
-        <>
-          <TbVolumeOff size={16} aria-hidden="true" />
-          {status === "error" ? "Retry" : "Voice"}
-        </>
-      )}
-    </button>
+    <>
+      <button
+        type="button"
+        aria-pressed={status === "on"}
+        aria-label={VOICE_LABELS[status]}
+        title={VOICE_LABELS[status]}
+        onClick={() => {
+          if (status === "off" && !hasAcceptedVoice()) setIsAsking(true);
+          else toggle();
+        }}
+        disabled={status === "loading"}
+        className="flex h-6 cursor-pointer items-center gap-1 rounded-full px-1.5 text-[10px] text-muted transition-colors hover:bg-white/5 hover:text-fg disabled:cursor-wait aria-pressed:text-neon"
+      >
+        {status === "loading" ? (
+          <>
+            <TbLoader2
+              size={14}
+              className="motion-safe:animate-spin"
+              aria-hidden="true"
+            />
+            {progress}%
+          </>
+        ) : status === "on" ? (
+          <TbVolume size={16} aria-hidden="true" />
+        ) : (
+          <>
+            <TbVolumeOff size={16} aria-hidden="true" />
+            {status === "error" ? "Retry" : "Voice"}
+          </>
+        )}
+      </button>
+      <VoiceConsentDialog
+        isOpen={isAsking}
+        onClose={() => setIsAsking(false)}
+        onAccept={() => {
+          setIsAsking(false);
+          toggle(); // still inside the click, which is what iOS needs to allow audio
+        }}
+      />
+    </>
   );
 }
