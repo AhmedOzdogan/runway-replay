@@ -4,6 +4,7 @@ import {
   linesPlayedThrough,
   linesSoFar,
   radioScript,
+  talkingLine,
 } from "../../../src/flights/radioScript";
 import { AIRPORT, flightThrough } from "../helpers";
 
@@ -255,5 +256,27 @@ describe("every radio variant", () => {
         }
       }
     }
+  });
+});
+
+describe("talkingLine", () => {
+  const conversation = [
+    { time: 100, speaker: "ATC" as const, text: "first", spoken: "first" },
+    {
+      time: 109,
+      speaker: "PILOT" as const,
+      text: "readback",
+      spoken: "readback",
+    },
+  ];
+
+  it("returns the line being said right now", () => {
+    expect(talkingLine(conversation, 103)?.text).toBe("first");
+    expect(talkingLine(conversation, 112)?.text).toBe("readback");
+  });
+
+  it("returns null between exchanges", () => {
+    expect(talkingLine(conversation, 99)).toBeNull();
+    expect(talkingLine(conversation, 200)).toBeNull();
   });
 });

@@ -1,15 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { linesPlayedThrough, type RadioLine } from "../flights/radioScript";
+import {
+  linesPlayedThrough,
+  MAX_PLAYBACK_STEP_SECONDS,
+  type RadioLine,
+} from "../flights/radioScript";
 import {
   createKokoroClient,
   type GeneratedAudio,
   type KokoroClient,
 } from "../sound/kokoroClient";
 import { playThroughRadio } from "../sound/radioEffect";
-import { KOKORO_VOICES, lineKey, upcomingLines } from "../sound/radioVoicePlan";
+import {
+  isTooLate,
+  KOKORO_VOICES,
+  lineAtSeek,
+  lineKey,
+  upcomingLines,
+} from "../sound/radioVoicePlan";
 import { createSerialQueue } from "../utils/serialQueue";
 
 export type RadioVoiceStatus = "off" | "loading" | "on" | "error";
+
+/** How long a jump has to stay put before the voice speaks, so a slider drag stays quiet. */
+const SEEK_SETTLE_MILLISECONDS = 300;
 
 export interface RadioVoice {
   status: RadioVoiceStatus;
@@ -17,6 +30,10 @@ export interface RadioVoice {
   progress: number;
   /** True while a line is audibly playing (keeps the replay at 1x until it's finished). */
   isSpeaking: boolean;
+  /** Keys (see lineKey) of the lines whose audio is generated and ready to play. */
+  readyLineKeys: ReadonlySet<string>;
+  /** Keys of the lines that were actually spoken, so the rest can be shown as skipped. */
+  spokenLineKeys: ReadonlySet<string>;
   toggle: () => void;
 }
 
@@ -29,6 +46,12 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
   const [status, setStatus] = useState<RadioVoiceStatus>("off");
   const [progress, setProgress] = useState(0);
   const [speakingCount, setSpeakingCount] = useState(0);
+  const [readyLineKeys, setReadyLineKeys] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
+  const [spokenLineKeys, setSpokenLineKeys] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
   const client = useRef<KokoroClient | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -61,7 +84,9 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
     if (!audio && client.current) {
       const { voice, speed } = KOKORO_VOICES[line.speaker];
       audio = client.current.generate(line.spoken, voice, speed);
-      audio.catch(() => prepared.current.delete(key)); // try again next time
+      audio
+        .then(() => setReadyLineKeys((ready) => new Set(ready).add(key)))
+        .catch(() => prepared.current.delete(key)); // try again next time
       prepared.current.set(key, audio);
     }
     return audio;
@@ -72,9 +97,13 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
       const audio = audioFor(line);
       if (!audio) return;
       const queue = playInOrder.current;
+      // When the line was due: everything after this is generation time the replay doesn't wait for.
+      const dueAt = performance.now();
       queue(async () => {
         const generated = await audio;
         const context = audioContext.current;
+        // Too late to say: the replay has moved on and it would talk over what comes next.
+        if (isTooLate(dueAt, performance.now())) return;
         // Another plane was selected or the voice was switched off meanwhile: stay quiet.
         if (
           !context ||
@@ -89,6 +118,7 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
           generated,
           startAt,
         );
+        setSpokenLineKeys((spoken) => new Set(spoken).add(lineKey(line)));
         nextFreeAt.current = endsAt;
         playing.current.push(...sources);
         setSpeakingCount((count) => count + 1);
@@ -109,9 +139,34 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
     if (lines !== previousLines.current) {
       previousLines.current = lines;
       stopPlaying();
+      // Start generating straight away: picking a flight mid-conversation can leave only seconds
+      // before the next line is due, and a line that isn't ready in time gets dropped.
+      // Every remaining line, not just the next few: a conversation is a handful of lines, and
+      // having them all ready is what keeps the exchange from stuttering.
+      if (status === "on") {
+        for (const line of upcomingLines(lines, time, Number.POSITIVE_INFINITY))
+          audioFor(line);
+      }
       return;
     }
     if (status !== "on") return;
+
+    // A jump (slider, ±1 min, a flight picked in the search) leaves lines queued for a time the
+    // replay is no longer at, so drop them and say the one that belongs here instead.
+    const isJump = time < before || time - before >= MAX_PLAYBACK_STEP_SECONDS;
+    if (isJump) {
+      stopPlaying();
+      const line = lineAtSeek(lines, time);
+      // Dragging the slider fires this on every frame; wait for it to settle before speaking.
+      if (line) {
+        const timer = setTimeout(
+          () => speak(line, lines),
+          SEEK_SETTLE_MILLISECONDS,
+        );
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
 
     for (const line of linesPlayedThrough(lines, before, time))
       speak(line, lines);
@@ -140,5 +195,12 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
       .catch(() => setStatus("error"));
   }, [status, stopPlaying]);
 
-  return { status, progress, isSpeaking: speakingCount > 0, toggle };
+  return {
+    status,
+    progress,
+    isSpeaking: speakingCount > 0,
+    readyLineKeys,
+    spokenLineKeys,
+    toggle,
+  };
 }

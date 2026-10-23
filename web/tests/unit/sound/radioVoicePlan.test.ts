@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { RadioLine } from "../../../src/flights/radioScript";
 import {
   downloadPercent,
+  isTooLate,
   KOKORO_VOICES,
+  lineAtSeek,
   lineKey,
+  lineVoiceState,
   radioDistortionCurve,
   trackDownload,
   upcomingLines,
@@ -111,5 +114,73 @@ describe("radioDistortionCurve", () => {
   it("is symmetric around zero", () => {
     expect(curve[50]).toBeCloseTo(0);
     expect(curve[0]).toBeCloseTo(-curve[100]);
+  });
+});
+
+describe("lineAtSeek", () => {
+  const conversation: RadioLine[] = [
+    { time: 100, speaker: "ATC", text: "first", spoken: "first" },
+    { time: 150, speaker: "PILOT", text: "second", spoken: "second" },
+    { time: 400, speaker: "ATC", text: "third", spoken: "third" },
+  ];
+
+  it("returns the line that was just said", () => {
+    expect(lineAtSeek(conversation, 160)).toEqual(conversation[1]);
+  });
+
+  it("returns nothing when the last line is long past", () => {
+    expect(lineAtSeek(conversation, 300)).toBeNull();
+  });
+
+  it("returns nothing when nothing has been said yet", () => {
+    expect(lineAtSeek(conversation, 50)).toBeNull();
+  });
+
+  it("never returns a line from the future", () => {
+    expect(lineAtSeek(conversation, 395)).toBeNull();
+  });
+});
+
+describe("isTooLate", () => {
+  it("lets a line through when it generated quickly", () => {
+    expect(isTooLate(1000, 1400)).toBe(false);
+  });
+
+  it("drops a line that took longer than the allowance", () => {
+    expect(isTooLate(1000, 3000)).toBe(true);
+  });
+
+  it("takes the allowance as an argument", () => {
+    expect(isTooLate(1000, 1400, 200)).toBe(true);
+  });
+});
+
+describe("lineVoiceState", () => {
+  const line: RadioLine = {
+    time: 100,
+    speaker: "ATC",
+    text: "cleared",
+    spoken: "cleared",
+  };
+  const key = lineKey(line);
+  const none: ReadonlySet<string> = new Set();
+
+  it("is generating while the audio isn't ready yet", () => {
+    expect(lineVoiceState(line, 95, none, none)).toBe("generating");
+  });
+
+  it("is ready once the audio exists and the moment hasn't passed", () => {
+    expect(lineVoiceState(line, 95, new Set([key]), none)).toBe("ready");
+  });
+
+  it("is spoken once it has been said", () => {
+    expect(lineVoiceState(line, 200, new Set([key]), new Set([key]))).toBe(
+      "spoken",
+    );
+  });
+
+  it("is skipped when the moment passed without it being said", () => {
+    expect(lineVoiceState(line, 200, new Set([key]), none)).toBe("skipped");
+    expect(lineVoiceState(line, 200, none, none)).toBe("skipped");
   });
 });

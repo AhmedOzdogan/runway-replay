@@ -77,7 +77,7 @@ export function VoiceConsentDialog({
 
       <ul className="my-4 flex list-none flex-col gap-2.5 leading-relaxed text-fg/90">
         <li>
-          <strong className="text-neon">One download of about 92 MB</strong>{" "}
+          <strong className="text-neon">One download of about 90 MB</strong>{" "}
           from huggingface.co. Your browser caches it, so it only happens once.
         </li>
         {isOnCostlyConnection() && (

@@ -26,7 +26,10 @@ interface FlightCardProps {
   isFollowing: boolean;
   /** Radio lines said so far for this flight. */
   radioLines: RadioLine[];
-  radioVoice: Pick<RadioVoice, "status" | "progress" | "toggle">;
+  radioVoice: Pick<
+    RadioVoice,
+    "status" | "progress" | "readyLineKeys" | "spokenLineKeys" | "toggle"
+  >;
   onFollowChange: (isFollowing: boolean) => void;
   onClose: () => void;
 }
@@ -214,7 +217,7 @@ export function FlightCard({
         aria-labelledby="flight-card-tab-radio"
         className={`${tab === "radio" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto sm:block`}
       >
-        <RadioTranscript lines={radioLines} voice={radioVoice} />
+        <RadioTranscript lines={radioLines} time={time} voice={radioVoice} />
       </div>
     </aside>
   );

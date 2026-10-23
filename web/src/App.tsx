@@ -8,12 +8,13 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { TimeBar } from "./components/TimeBar";
 import { AIRPORTS } from "./data/airports";
 import { closestFlight, findParkings, planesAt } from "./flights/planes";
-import { isRadioTalking, linesSoFar, radioScript } from "./flights/radioScript";
+import { linesSoFar, radioScript, talkingLine } from "./flights/radioScript";
 import { useFlights } from "./hooks/useFlights";
 import { useGoAroundAlert } from "./hooks/useGoAroundAlert";
 import { usePlayback } from "./hooks/usePlayback";
 import { useRadioVoice } from "./hooks/useRadioVoice";
 import { ReplayMap } from "./map/ReplayMap";
+import { lineKey } from "./sound/radioVoicePlan";
 import { type Flight, TIME } from "./types/flight";
 
 const DEFAULT_AIRPORT = "MUC";
@@ -56,9 +57,14 @@ export function App() {
   );
   const radioLines = linesSoFar(radio, playback.time);
   const radioVoice = useRadioVoice(radio, playback.time);
-  // Stay at 1x while a line is shown or still being spoken (a spoken line can run longer).
-  const radioTalking =
-    isRadioTalking(radio, playback.time) || radioVoice.isSpeaking;
+  // Stay at 1x while a line is shown or still being spoken (a spoken line can run longer). With
+  // the voice on, a line whose audio isn't ready gets skipped, so there is nothing to slow for.
+  const talking = talkingLine(radio, playback.time);
+  const isTalkingAudible =
+    talking !== null &&
+    (radioVoice.status !== "on" ||
+      radioVoice.readyLineKeys.has(lineKey(talking)));
+  const radioTalking = isTalkingAudible || radioVoice.isSpeaking;
   useEffect(() => setIsRadioSlowMotion(radioTalking), [radioTalking]);
 
   useEffect(() => {

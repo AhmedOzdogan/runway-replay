@@ -3,7 +3,12 @@
 
 import type { KokoroTTS } from "kokoro-js";
 import { createSerialQueue } from "../utils/serialQueue";
-import { KOKORO_DTYPE, KOKORO_MODEL_ID } from "./radioVoicePlan";
+import {
+  KOKORO_DEVICE,
+  KOKORO_DTYPE,
+  KOKORO_MODEL_ID,
+  WARM_UP_TEXT,
+} from "./radioVoicePlan";
 
 /** Messages from the page to this worker. */
 export type ToWorker =
@@ -52,10 +57,21 @@ async function load(): Promise<void> {
     const { KokoroTTS } = await import("kokoro-js");
     tts = await KokoroTTS.from_pretrained(KOKORO_MODEL_ID, {
       dtype: KOKORO_DTYPE,
-      device: "wasm",
+      device: KOKORO_DEVICE,
       progress_callback: (report) =>
         worker.postMessage({ type: "progress", report }),
     });
+    // Generate one throwaway line while the user is still watching the progress, so the first real
+    // transmission isn't slowed down by the model's first run. A failure here is not fatal: the
+    // voice still works, the first line is just slower.
+    try {
+      await tts.generate(WARM_UP_TEXT, {
+        voice: "af_bella" as KokoroVoice,
+        speed: 1,
+      });
+    } catch {
+      // warm-up only
+    }
     worker.postMessage({ type: "ready" });
   } catch (error) {
     worker.postMessage({ type: "loadError", message: String(error) });
