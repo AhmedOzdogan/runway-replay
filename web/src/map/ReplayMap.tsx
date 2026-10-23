@@ -51,6 +51,7 @@ interface ReplayMapProps {
   time: number;
   isFollowing: boolean;
   onSelectPlane: (icao: string | null) => void;
+  onReady: () => void;
 }
 
 /** The dark map with the airport label, neon trails and plane icons. */
@@ -63,6 +64,7 @@ export function ReplayMap({
   time,
   isFollowing,
   onSelectPlane,
+  onReady,
 }: ReplayMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [isHoveringPlane, setIsHoveringPlane] = useState(false);
@@ -92,7 +94,10 @@ export function ReplayMap({
       mapStyle={MAP_STYLE_URL}
       // Replaced by the compact control below, which the time bar can't cover.
       attributionControl={false}
-      onLoad={brightenRunways}
+      onLoad={(event) => {
+        brightenRunways(event);
+        onReady();
+      }}
       // Empty keeps MapLibre's own grab / grabbing cursors for panning.
       cursor={isHoveringPlane ? "pointer" : ""}
     >
