@@ -23,8 +23,12 @@ import { classifyFlight, type FlightKind } from "./status";
 /** Chosen once per page load: the same flight says the same thing while you watch, but differs next visit. */
 export const SESSION_SEED = Math.floor(Math.random() * 1_000_000);
 
-/** Seconds between two lines of the same exchange, so a conversation unfolds instead of appearing at once. */
-const LINE_GAP_SECONDS = 6;
+/**
+ * Seconds between two lines of the same exchange, so a conversation unfolds instead of appearing
+ * at once. It also has to cover the second or so the voice needs to generate the readback, or the
+ * pilot would start talking before the line is ready and get dropped as too late.
+ */
+const LINE_GAP_SECONDS = 9;
 /** When ATC clears an arrival to land, before touchdown. */
 const CLEARED_TO_LAND_SECONDS_BEFORE = 90;
 /** When ATC talks to an arrival again after touchdown. */
@@ -241,22 +245,32 @@ function goAroundClimbAltitude(flight: Flight, goAroundAt: number): number {
 }
 
 /** How long after a line starts we treat the radio as busy (roughly the time to say it). */
-const LINE_TALK_SECONDS = LINE_GAP_SECONDS;
+export const LINE_TALK_SECONDS = LINE_GAP_SECONDS;
 
 /** The lines already said by `time`, oldest first. */
 export function linesSoFar(lines: RadioLine[], time: number): RadioLine[] {
   return lines.filter((line) => line.time <= time);
 }
 
-/** True while a line is being said at `time`, e.g. to slow the replay down so it can be heard. */
-export function isRadioTalking(lines: RadioLine[], time: number): boolean {
-  return lines.some(
-    (line) => time >= line.time && time < line.time + LINE_TALK_SECONDS,
+/** The line being said at `time`, or null when the radio is quiet. */
+export function talkingLine(
+  lines: RadioLine[],
+  time: number,
+): RadioLine | null {
+  return (
+    lines.find(
+      (line) => time >= line.time && time < line.time + LINE_TALK_SECONDS,
+    ) ?? null
   );
 }
 
+/** True while a line is being said at `time`, e.g. to slow the replay down so it can be heard. */
+export function isRadioTalking(lines: RadioLine[], time: number): boolean {
+  return talkingLine(lines, time) !== null;
+}
+
 /** Largest time step (s) between two checks that still counts as playing; bigger jumps are slider moves. */
-const MAX_PLAYBACK_STEP_SECONDS = 120;
+export const MAX_PLAYBACK_STEP_SECONDS = 120;
 
 /**
  * The lines the replay just played through, between `previousTime` (exclusive) and `time`.
