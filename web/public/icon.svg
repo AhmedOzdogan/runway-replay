@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Runway Replay">
+  <title>Runway Replay</title>
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#11161f"/>
+      <stop offset="1" stop-color="#070a10"/>
+    </linearGradient>
+    <!-- The neon bloom the app uses everywhere (the shadow-neon token). -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Softer bloom for the white plane: a full-strength blur turns into a grey smudge. -->
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feComponentTransfer in="blur" result="faded">
+        <feFuncA type="linear" slope="0.45"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="faded"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#night)"/>
+
+  <!-- Replay loop: open at the top left, arrowhead travelling up the left side. -->
+  <g filter="url(#glow)">
+    <path d="M100 166 A180 180 0 1 1 87 318" fill="none" stroke="#22d3ee" stroke-width="26" stroke-linecap="round"/>
+    <path d="M75 290 L110 306 L62 326 Z" fill="#22d3ee"/>
+  </g>
+
+  <!-- The same plane the map draws (src/map/layers.ts), scaled from its 64×64 box. -->
+  <g filter="url(#softGlow)" transform="translate(256 252) scale(3.4) translate(-32 -32)">
+    <path fill="#fff" d="M32 2c-2.2 0-4 2.2-4 5v17L6 38v6l22-7v14l-6 5v4l10-3 10 3v-4l-6-5V37l22 7v-6L36 24V7c0-2.8-1.8-5-4-5z"/>
+  </g>
+</svg>
