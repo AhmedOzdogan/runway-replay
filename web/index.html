@@ -9,6 +9,10 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0b0e14" />
+    <!-- The basemap's style and its tiles come from CARTO; opening those connections while the
+         bundle is still downloading saves a DNS lookup and a TLS handshake on the first tile. -->
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin />
+    <link rel="preconnect" href="https://tiles.basemaps.cartocdn.com" crossorigin />
   </head>
   <body class="h-full bg-night text-sm text-fg">
     <div id="root" class="h-full"></div>
