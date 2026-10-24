@@ -20,7 +20,10 @@ def test_dump_urls_returns_every_part_in_order(monkeypatch):
     monkeypatch.setattr(
         download.urllib.request,
         "urlopen",
-        lambda url: fake_release([f"{TAG}.tar.ac", "README.md", f"{TAG}.tar.aa", f"{TAG}.tar.ab"]),
+        # The real call passes timeout=, which this stub has to tolerate.
+        lambda url, **_: fake_release(
+            [f"{TAG}.tar.ac", "README.md", f"{TAG}.tar.aa", f"{TAG}.tar.ab"]
+        ),
     )
     assert download.dump_urls("2026-10-20") == [
         f"{RELEASE_FILE}/{TAG}/{TAG}.tar.aa",
