@@ -223,3 +223,21 @@ describe("written forms (for the transcript)", () => {
     expect(writtenHeading(0)).toBe("360");
   });
 });
+
+describe("writtenRunway", () => {
+  it("names the runway after the heading", () => {
+    expect(writtenRunway(262)).toBe("26");
+    expect(writtenRunway(80)).toBe("08");
+  });
+
+  it("calls north 36, never 00", () => {
+    expect(writtenRunway(0)).toBe("36");
+    expect(writtenRunway(358)).toBe("36");
+  });
+
+  it("handles a heading that comes in negative", () => {
+    // atan2 used to hand westerly headings over as -94, which named runway "-9".
+    expect(writtenRunway(-94)).toBe("27");
+    expect(writtenRunway(-5)).toBe("36");
+  });
+});

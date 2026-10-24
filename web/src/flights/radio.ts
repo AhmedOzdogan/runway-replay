@@ -46,9 +46,11 @@ export function writtenCallsign(callsign: string): string {
 /**
  * 262 -> "26": runways are named after their direction ÷ 10, always with two digits
  * (ICAO keeps the leading zero: 80 -> "08"). North is runway 36, never 00.
+ * Headings are normalised first: a westerly one can arrive as -94, which named runway "-9".
  */
 export function writtenRunway(heading: number): string {
-  const runway = Math.round(heading / 10) || 36;
+  const degrees = ((heading % 360) + 360) % 360;
+  const runway = Math.round(degrees / 10) % 36 || 36;
   return String(runway).padStart(2, "0");
 }
 
