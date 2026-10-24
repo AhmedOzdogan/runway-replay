@@ -12,9 +12,14 @@ export interface GeneratedAudio {
   sampleRate: number;
 }
 
+/** "downloading" while the files come in, "preparing" while the model says its first line. */
+export type LoadStage = "downloading" | "preparing";
+
 export interface KokoroClient {
-  /** Download (first time) and start the model; `onProgress` gets 0–100 while downloading. */
-  load: (onProgress: (percent: number) => void) => Promise<void>;
+  /** Download (first time) and start the model; `onProgress` reports 0–100 and the stage. */
+  load: (
+    onProgress: (percent: number, stage: LoadStage) => void,
+  ) => Promise<void>;
   generate: (
     text: string,
     voice: string,
@@ -35,7 +40,7 @@ export function createKokoroClient(): KokoroClient {
     number,
     { resolve: (audio: GeneratedAudio) => void; reject: (error: Error) => void }
   >();
-  let onLoadProgress: (percent: number) => void = () => {};
+  let onLoadProgress: (percent: number, stage: LoadStage) => void = () => {};
   let finishLoading: {
     resolve: () => void;
     reject: (error: Error) => void;
@@ -47,7 +52,10 @@ export function createKokoroClient(): KokoroClient {
     switch (message.type) {
       case "progress":
         download = trackDownload(download, message.report);
-        onLoadProgress(downloadPercent(download));
+        onLoadProgress(downloadPercent(download), "downloading");
+        break;
+      case "warming":
+        onLoadProgress(100, "preparing");
         break;
       case "ready":
         finishLoading?.resolve();

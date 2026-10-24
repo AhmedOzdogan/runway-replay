@@ -38,7 +38,13 @@ jobs:
         with:
           ref: data
           path: data
-      - run: cp data/*.json.gz data/latest.json web/public/data/
+      # Only the newest day goes into the site: the data branch keeps every day, and the build
+      # would otherwise grow by ~5 MB a night. index.json lists what else is available.
+      - name: Copy the newest day into the build
+        run: |
+          date=$(python3 -c "import json; print(json.load(open('data/latest.json'))['date'])")
+          cp data/*-"$date".json.gz data/latest.json web/public/data/
+          cp data/index.json web/public/data/ 2>/dev/null || true
       - uses: actions/setup-node@v4
         with:
           node-version-file: web/.nvmrc

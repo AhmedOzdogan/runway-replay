@@ -39,9 +39,11 @@ export function routeEnds(
   airportCode: string,
 ): { from: string; to: string } {
   const { kind } = classifyFlight(flight);
+  const here = kind === "departure" || kind === "ground";
+  const there = kind === "arrival" || kind === "ground";
   return {
-    from: kind === "departure" || kind === "ground" ? airportCode : "?",
-    to: kind === "arrival" || kind === "ground" ? airportCode : "?",
+    from: here ? airportCode : (flight.origin?.icao ?? "?"),
+    to: there ? airportCode : (flight.destination?.icao ?? "?"),
   };
 }
 

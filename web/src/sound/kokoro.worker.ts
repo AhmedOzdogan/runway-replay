@@ -8,6 +8,7 @@ import {
   KOKORO_DTYPE,
   KOKORO_MODEL_ID,
   WARM_UP_TEXT,
+  WARM_UP_TIMEOUT_MS,
 } from "./radioVoicePlan";
 
 /** Messages from the page to this worker. */
@@ -32,6 +33,7 @@ export type FromWorker =
         total?: number;
       };
     }
+  | { type: "warming" }
   | { type: "ready" }
   | { type: "loadError"; message: string }
   | { type: "audio"; id: number; samples: Float32Array; sampleRate: number }
@@ -52,6 +54,20 @@ let tts: KokoroTTS | null = null;
 // makes some fail.
 const oneAtATime = createSerialQueue();
 
+/** Rejects with `message` if `work` hasn't finished in time; the work itself can't be cancelled. */
+function withTimeout<T>(
+  work: Promise<T>,
+  milliseconds: number,
+  message: string,
+): Promise<T> {
+  return Promise.race([
+    work,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(message)), milliseconds),
+    ),
+  ]);
+}
+
 async function load(): Promise<void> {
   try {
     const { KokoroTTS } = await import("kokoro-js");
@@ -61,18 +77,23 @@ async function load(): Promise<void> {
       progress_callback: (report) =>
         worker.postMessage({ type: "progress", report }),
     });
-    // Generate one throwaway line while the user is still watching the progress, so the first real
-    // transmission isn't slowed down by the model's first run. A failure here is not fatal: the
-    // voice still works, the first line is just slower.
-    try {
-      await tts.generate(WARM_UP_TEXT, {
-        voice: "af_bella" as KokoroVoice,
-        speed: 1,
-      });
-    } catch {
-      // warm-up only
-    }
-    worker.postMessage({ type: "ready" });
+    // One throwaway line warms the model up. It also pulls the voice embeddings, which kokoro-js
+    // only fetches on the first generate, so it is part download: it runs through the normal
+    // queue and never fails the voice, it just delays the first real line.
+    const model = tts;
+    worker.postMessage({ type: "warming" });
+    void oneAtATime(() =>
+      withTimeout(
+        model.generate(WARM_UP_TEXT, {
+          voice: "af_bella" as KokoroVoice,
+          speed: 1,
+        }),
+        WARM_UP_TIMEOUT_MS,
+        "warm-up timed out",
+      )
+        .catch(() => null)
+        .finally(() => worker.postMessage({ type: "ready" })),
+    );
   } catch (error) {
     worker.postMessage({ type: "loadError", message: String(error) });
   }
@@ -86,10 +107,16 @@ async function generate(
 ): Promise<void> {
   try {
     if (!tts) throw new Error("The voice model isn't loaded yet");
+    const startedAt = performance.now();
     const audio = await tts.generate(text, {
       voice: voice as KokoroVoice,
       speed,
     });
+    if (import.meta.env.DEV)
+      console.info(
+        `[voice] generated in ${Math.round(performance.now() - startedAt)} ms:`,
+        text,
+      );
     const samples = audio.audio as Float32Array;
     // Transfer the buffer instead of copying it: the page owns it from now on.
     worker.postMessage(

@@ -1,5 +1,5 @@
 // Friendly names for common codes. Unknown codes just show the code itself.
-// ponytail: hand-picked lists for MUC/IST/HAN traffic; a full database would be a data file.
+// ponytail: hand-picked lists for MUC/LHR/AMS traffic; a full database would be a data file.
 
 /** ICAO airline designator (first 3 letters of the callsign) -> airline name. */
 export const AIRLINES: Record<string, string> = {

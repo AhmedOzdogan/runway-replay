@@ -69,10 +69,20 @@ export function createTrailLayer(flights: Flight[], time: number) {
  * An icon per aircraft or ground vehicle. Planes: white when flying, grey when parked, amber after a
  * go-around, neon when selected. Ground vehicles: a small orange truck.
  */
+/**
+ * The icon's rotation on screen. Headings are degrees clockwise from north and IconLayer angles are
+ * counter-clockwise, and the icons are drawn in screen space: when the map is rotated the heading
+ * has to be measured against the new "up", which is the map's bearing.
+ */
+export function iconAngle(heading: number, bearing: number): number {
+  return bearing - heading;
+}
+
 export function createPlaneLayer(
   planes: Plane[],
   selectedPlane: Plane | null,
   time: number,
+  bearing: number,
 ) {
   const iconColor = (plane: Plane): Color => {
     if (plane === selectedPlane) return NEON;
@@ -94,8 +104,9 @@ export function createPlaneLayer(
     getIcon: (plane) =>
       isGroundVehicle(plane.flight) ? VEHICLE_ICON : PLANE_ICON,
     getPosition: (plane) => plane.position,
-    // IconLayer angles are counter-clockwise; headings are clockwise.
-    getAngle: (plane) => -plane.heading,
+    getAngle: (plane) => iconAngle(plane.heading, bearing),
+    // Re-rotate the icons when the map is rotated, not only when the planes move.
+    updateTriggers: { getAngle: bearing },
     getSize: iconSize,
     getColor: iconColor,
   });

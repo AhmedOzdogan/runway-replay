@@ -11,15 +11,66 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from airports import AIRPORTS
+from airport_lookup import ReferenceAirport, load_reference, nearest_airport
+from airports import AIRPORTS, Airport
 from download import stream_dump
 from filter import filter_points
 from resample import resample, split_flights
+from routes import Landing, airport_after, airport_before, landings
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "web" / "public" / "data"
 
+# Below this a flight counts as "at the airport", for telling arrivals from departures. Istanbul
+# showed that "on the ground" is useless: most airports have no surface coverage at all.
+MAX_LOW_ALTITUDE_FT = 4_000
 
-def flights_near(trace: dict, airport: tuple[float, float], day_start: int) -> list[dict]:
+
+# Positions inside a resampled flight point (see types/flight.ts).
+OUT_TIME, OUT_LON, OUT_LAT, OUT_ALTITUDE = 0, 1, 2, 3
+
+
+def uses_this_airport(points: list, airport: Airport, reference: list[ReferenceAirport]) -> bool:
+    """False for a neighbour's traffic: 60% of Heathrow's 50 km zone is Gatwick, Luton and City.
+
+    A flight belongs to the airport nearest its lowest point. Coming down near no airport at all
+    is an overflight, which we keep: it is traffic passing this airport, not another airport's.
+    """
+    lowest = min(points, key=lambda point: point[OUT_ALTITUDE])
+    used = nearest_airport(lowest[OUT_LAT], lowest[OUT_LON], reference)
+    return used is None or used.icao == airport.icao
+
+
+def named(found: ReferenceAirport | None) -> dict | None:
+    """The airport as it goes into the file: the code to match on, the city to show."""
+    return {"icao": found.icao, "city": found.city} if found else None
+
+
+def route_ends(
+    points: list,
+    airport: Airport,
+    arrivals: list[Landing],
+    reference: list[ReferenceAirport],
+) -> tuple[dict | None, dict | None]:
+    """(origin, destination), each {"icao", "city"} or None when the day's data can't say."""
+    starts_low = points[0][OUT_ALTITUDE] <= MAX_LOW_ALTITUDE_FT
+    ends_low = points[-1][OUT_ALTITUDE] <= MAX_LOW_ALTITUDE_FT
+    origin = destination = None
+    if ends_low and not starts_low:  # arrived here
+        origin = airport_before(arrivals, points[0][OUT_TIME], airport.lat, airport.lon, reference)
+    if starts_low and not ends_low:  # left from here
+        destination = airport_after(
+            arrivals, points[-1][OUT_TIME], airport.lat, airport.lon, reference
+        )
+    return named(origin), named(destination)
+
+
+def flights_near(
+    trace: dict,
+    airport: Airport,
+    day_start: int,
+    reference: list[ReferenceAirport] | None = None,
+    arrivals: list[Landing] | None = None,
+) -> list[dict]:
     """Turn one aircraft's day (a decoded trace file) into flights near `airport`."""
     # Point times in the file are relative to trace["timestamp"]; re-base them on the day start.
     seconds_offset = trace["timestamp"] - day_start
@@ -30,6 +81,14 @@ def flights_near(trace: dict, airport: tuple[float, float], day_start: int) -> l
     for flight_points in split_flights(points):
         if len(flight_points) < 2:
             continue
+        resampled = resample(flight_points)
+        if reference is not None and not uses_this_airport(resampled, airport, reference):
+            continue
+        origin, destination = (
+            route_ends(resampled, airport, arrivals, reference)
+            if reference is not None and arrivals is not None
+            else (None, None)
+        )
         flights.append(
             {
                 "icao": trace["icao"],
@@ -40,7 +99,9 @@ def flights_near(trace: dict, airport: tuple[float, float], day_start: int) -> l
                 "callsign": flight_points[-1][4],
                 # Latest ADS-B emitter category seen, e.g. "A3" (airliner) or "C2" (ground vehicle).
                 "category": flight_points[-1][5],
-                "points": resample(flight_points),
+                "origin": origin,
+                "destination": destination,
+                "points": resampled,
             }
         )
     return flights
@@ -55,9 +116,14 @@ def main() -> None:
     day_start = int(datetime.fromisoformat(args.date).replace(tzinfo=UTC).timestamp())
     flights_by_airport = {code: [] for code in args.airport}
 
+    reference = load_reference()
     for aircraft_count, trace in enumerate(stream_dump(args.date), 1):
+        # Where this aircraft came down during the day, computed once and shared by the airports.
+        arrivals = landings(trace, day_start)
         for code in args.airport:
-            flights_by_airport[code].extend(flights_near(trace, AIRPORTS[code], day_start))
+            flights_by_airport[code].extend(
+                flights_near(trace, AIRPORTS[code], day_start, reference, arrivals)
+            )
         if aircraft_count % 10_000 == 0:
             counts = ", ".join(f"{code} {len(found)}" for code, found in flights_by_airport.items())
             print(f"{aircraft_count} aircraft read; flights: {counts}", file=sys.stderr)

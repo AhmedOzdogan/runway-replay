@@ -144,10 +144,12 @@ export function TimeBar({
           <span className="ml-1 text-xs text-muted">UTC</span>
           {isRadioSlowMotion && (
             <span
-              className="ml-2 inline-flex items-center gap-1 rounded-full bg-neon/15 px-2 py-0.5 align-middle text-[11px] text-neon"
+              // Icon only on phones: the full label pushed the speed buttons onto their own row.
+              className="ml-2 inline-flex items-center gap-1 rounded-full bg-neon/15 px-1.5 py-0.5 align-middle text-[11px] text-neon sm:px-2"
               title="Slowed down to 1x while the radio is talking"
             >
-              <TbRadio size={12} aria-hidden="true" /> Radio · 1x
+              <TbRadio size={12} aria-hidden="true" />
+              <span className="hidden sm:inline">Radio · 1x</span>
             </span>
           )}
         </div>

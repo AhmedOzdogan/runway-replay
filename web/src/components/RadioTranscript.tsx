@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   TbBuildingBroadcastTower,
   TbLoader2,
@@ -8,7 +8,11 @@ import {
 } from "react-icons/tb";
 import type { RadioLine } from "../flights/radioScript";
 import type { RadioVoice } from "../hooks/useRadioVoice";
-import { type LineVoiceState, lineVoiceState } from "../sound/radioVoicePlan";
+import {
+  isVoiceSupported,
+  type LineVoiceState,
+  lineVoiceState,
+} from "../sound/radioVoicePlan";
 import { formatClock } from "../utils/format";
 import { hasAcceptedVoice, VoiceConsentDialog } from "./VoiceConsentDialog";
 
@@ -19,7 +23,13 @@ interface RadioTranscriptProps {
   time: number;
   voice: Pick<
     RadioVoice,
-    "status" | "progress" | "readyLineKeys" | "spokenLineKeys" | "toggle"
+    | "status"
+    | "progress"
+    | "loadStage"
+    | "errorMessage"
+    | "readyLineKeys"
+    | "spokenLineKeys"
+    | "toggle"
   >;
 }
 
@@ -59,6 +69,18 @@ export function RadioTranscript({ lines, time, voice }: RadioTranscriptProps) {
           <VoiceButton voice={voice} />
         </span>
       </h2>
+
+      {voice.status === "error" && (
+        <p
+          // The raw error (out of memory, no backend…) means nothing to a visitor; keep it in the
+          // tooltip so it's still there when someone reports the problem.
+          title={voice.errorMessage ?? undefined}
+          className="mb-2 rounded-lg border border-line bg-night/60 px-2 py-1 text-[11px] text-muted"
+        >
+          The radio voice isn't supported on this device yet — the transcript
+          still works.
+        </p>
+      )}
 
       {lines.length === 0 ? (
         <p className="text-xs text-muted italic">Listening…</p>
@@ -142,7 +164,7 @@ function VoiceStateDot({ state }: { state: LineVoiceState }) {
 
 const VOICE_LABELS: Record<RadioVoice["status"], string> = {
   off: "Turn on the radio voice (downloads ~90 MB once from huggingface.co)",
-  loading: "Downloading the radio voice…",
+  loading: "Getting the radio voice ready…",
   on: "Turn off the radio voice",
   error: "The radio voice couldn't load. Click to try again.",
 };
@@ -151,11 +173,28 @@ const VOICE_LABELS: Record<RadioVoice["status"], string> = {
 function VoiceButton({
   voice,
 }: {
-  voice: Pick<RadioVoice, "status" | "progress" | "toggle">;
+  voice: Pick<RadioVoice, "status" | "progress" | "loadStage" | "toggle">;
 }) {
-  const { status, progress, toggle } = voice;
+  const { status, progress, loadStage, toggle } = voice;
   // Switching the voice on the first time downloads ~92 MB, so ask before spending someone's data.
   const [isAsking, setIsAsking] = useState(false);
+  // Phones and tablets can't run the model (see docs/radio-voice.md), so don't offer the download.
+  const isSupported = useMemo(
+    () => isVoiceSupported(window.matchMedia("(pointer: coarse)").matches),
+    [],
+  );
+
+  if (!isSupported) {
+    return (
+      <span
+        title="The HD radio voice needs a desktop browser. The transcript works everywhere."
+        className="text-[10px] text-muted"
+      >
+        Voice: desktop only
+      </span>
+    );
+  }
+
   return (
     <>
       <button
@@ -177,7 +216,7 @@ function VoiceButton({
               className="motion-safe:animate-spin"
               aria-hidden="true"
             />
-            {progress}%
+            {loadStage === "preparing" ? "Preparing…" : `${progress}%`}
           </>
         ) : status === "on" ? (
           <TbVolume size={16} aria-hidden="true" />

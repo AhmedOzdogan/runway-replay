@@ -12,14 +12,14 @@ KM_PER_DEGREE_LON_AT_EQUATOR = 111.32
 TIME, LAT, LON, ALTITUDE, GROUND_SPEED, DETAILS = 0, 1, 2, 3, 4, 8
 
 
-def filter_points(trace_points: list, airport: tuple[float, float]) -> list:
+def filter_points(trace_points: list, airport) -> list:
     """Return [seconds, lon, lat, altitude_ft, callsign, category] for points in the airport zone.
 
     The zone is RADIUS_KM around `airport` and below MAX_ALTITUDE_FT. `callsign` and `category`
     (ADS-B emitter category, e.g. "A3" or "C2") are the latest ones seen on any point so far:
     adsb.lol only sends them on some points.
     """
-    airport_lat, airport_lon = airport
+    airport_lat, airport_lon = airport.lat, airport.lon
     km_per_degree_lon = KM_PER_DEGREE_LON_AT_EQUATOR * math.cos(math.radians(airport_lat))
     callsign = None
     category = None

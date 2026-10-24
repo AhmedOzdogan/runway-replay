@@ -27,7 +27,7 @@ so you can work on the frontend without the ~3.5 GB download. Formats: [docs/dat
 To process a real day (streams ~3.5 GB once, writes one file per airport):
 
 ```sh
-cd pipeline && python process.py --airport MUC IST HAN --date 2026-10-18
+cd pipeline && python process.py --airport MUC LHR AMS --date 2026-10-18
 ```
 
 On macOS with the python.org installer, if you get `CERTIFICATE_VERIFY_FAILED`, run

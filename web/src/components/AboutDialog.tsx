@@ -106,7 +106,9 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
 
         <Heading>How to use it</Heading>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Pick an airport at the top: Munich, Istanbul or Hanoi.</li>
+          <li>
+            Pick an airport at the top: Munich, London Heathrow or Amsterdam.
+          </li>
           <li>
             Play or pause with the big button or <Key>Space</Key>. Change the
             speed with the buttons or keys <Key>1</Key>–<Key>5</Key> (1x–16x),
@@ -125,6 +127,9 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
           <li>
             Want to hear it? Switch on the <strong>Voice</strong> in the radio
             panel (it downloads a ~90 MB voice model once, see Privacy below).
+            The voice needs a desktop browser: phones and tablets generate
+            speech far slower than the conversation runs, so the transcript is
+            shown without it there.
           </li>
           <li>
             Watch out for amber planes and the <strong>GO AROUND!</strong>{" "}

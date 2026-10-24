@@ -9,6 +9,12 @@ export const LON = 1;
 export const LAT = 2;
 export const ALTITUDE = 3;
 
+/** The other end of a flight: the ICAO code to match on, the city to show. */
+export interface RouteEnd {
+  icao: string;
+  city: string;
+}
+
 /** One aircraft's continuous visit to the airport zone (an arrival, a departure, or an overflight). */
 export interface Flight {
   icao: string;
@@ -16,6 +22,10 @@ export interface Flight {
   type: string | null;
   callsign: string | null;
   category: string | null;
+  /** Where it came from, worked out in the pipeline; null when the day's data can't say. */
+  origin: RouteEnd | null;
+  /** Where it went; null when the day's data can't say (coverage, or it lands after midnight). */
+  destination: RouteEnd | null;
   points: Point[];
   /** Added in the browser (flights/estimate.ts), not in the file: points before this time are estimated. */
   estimatedBefore?: number;

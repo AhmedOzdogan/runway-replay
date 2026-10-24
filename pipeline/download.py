@@ -8,13 +8,18 @@ from collections.abc import Iterator
 
 RELEASE_API = "https://api.github.com/repos/adsblol/globe_history_{year}/releases/tags/{tag}"
 
+# urlopen waits forever by default, so a connection that goes quiet (a laptop sleeping, a server
+# dropping the stream) blocks the whole run. This is per socket operation, not for the download as
+# a whole, so a slow but alive stream is unaffected.
+SOCKET_TIMEOUT_SECONDS = 60
+
 
 class ConcatenatedStream:
     """Read several HTTP responses back to back, as one file-like stream."""
 
     def __init__(self, urls: list[str]):
         self._urls = iter(urls)
-        self._response = urllib.request.urlopen(next(self._urls))
+        self._response = urllib.request.urlopen(next(self._urls), timeout=SOCKET_TIMEOUT_SECONDS)
 
     def read(self, size: int = -1) -> bytes:
         while True:
@@ -25,7 +30,7 @@ class ConcatenatedStream:
             next_url = next(self._urls, None)
             if next_url is None:
                 return b""
-            self._response = urllib.request.urlopen(next_url)
+            self._response = urllib.request.urlopen(next_url, timeout=SOCKET_TIMEOUT_SECONDS)
 
 
 def dump_urls(date: str) -> list[str]:
@@ -35,7 +40,9 @@ def dump_urls(date: str) -> list[str]:
     guessing: a missing part truncates the stream mid-member ("unexpected end of data").
     """
     tag = f"v{date.replace('-', '.')}-planes-readsb-prod-0"
-    with urllib.request.urlopen(RELEASE_API.format(year=date[:4], tag=tag)) as response:
+    with urllib.request.urlopen(
+        RELEASE_API.format(year=date[:4], tag=tag), timeout=SOCKET_TIMEOUT_SECONDS
+    ) as response:
         assets = json.load(response)["assets"]
     # Sorted: the parts only form the tar in name order, which the API doesn't promise.
     return sorted(

@@ -3,6 +3,7 @@ import type { RadioLine } from "../../../src/flights/radioScript";
 import {
   downloadPercent,
   isTooLate,
+  isVoiceSupported,
   KOKORO_VOICES,
   lineAtSeek,
   lineKey,
@@ -182,5 +183,15 @@ describe("lineVoiceState", () => {
   it("is skipped when the moment passed without it being said", () => {
     expect(lineVoiceState(line, 200, new Set([key]), none)).toBe("skipped");
     expect(lineVoiceState(line, 200, none, none)).toBe("skipped");
+  });
+});
+
+describe("isVoiceSupported", () => {
+  it("is off on touch devices: generating a line there is slower than the replay", () => {
+    expect(isVoiceSupported(true)).toBe(false);
+  });
+
+  it("is on where there is a mouse", () => {
+    expect(isVoiceSupported(false)).toBe(true);
   });
 });
