@@ -27,6 +27,9 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
       can't relicense under MIT (see the Skiplagged verdict, where the damages were the copyright
       claim on the logo, not the trademark one). If images ever happen, only logos with an explicit
       free licence, each one recorded with its source
+- [ ] HD radio voice on phones: generating a line takes 6–11 s there against a 9 s gap, so the
+      voice is desktop-only today. The one idea left is cross-origin isolation (COOP/COEP through a
+      service worker) for multi-threaded inference; WebGPU is ruled out, see docs/radio-voice.md
 - [ ] Radio for overflights and ground movements
 - [ ] Zoom the camera in on a go-around
 - [ ] Spotter badges: A380, 747, military, private jets

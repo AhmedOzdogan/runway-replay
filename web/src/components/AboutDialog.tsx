@@ -125,6 +125,9 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
           <li>
             Want to hear it? Switch on the <strong>Voice</strong> in the radio
             panel (it downloads a ~90 MB voice model once, see Privacy below).
+            The voice needs a desktop browser: phones and tablets generate
+            speech far slower than the conversation runs, so the transcript is
+            shown without it there.
           </li>
           <li>
             Watch out for amber planes and the <strong>GO AROUND!</strong>{" "}

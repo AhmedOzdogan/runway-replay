@@ -28,7 +28,13 @@ interface FlightCardProps {
   radioLines: RadioLine[];
   radioVoice: Pick<
     RadioVoice,
-    "status" | "progress" | "readyLineKeys" | "spokenLineKeys" | "toggle"
+    | "status"
+    | "progress"
+    | "loadStage"
+    | "errorMessage"
+    | "readyLineKeys"
+    | "spokenLineKeys"
+    | "toggle"
   >;
   onFollowChange: (isFollowing: boolean) => void;
   onClose: () => void;

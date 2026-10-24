@@ -9,14 +9,31 @@ import { LINE_TALK_SECONDS, type RadioLine } from "../flights/radioScript";
 export const KOKORO_MODEL_ID = "onnx-community/Kokoro-82M-v1.0-ONNX";
 
 /**
- * 8-bit quantized model on WebAssembly: ~90 MB and clear. WebGPU with q4f16 generates faster on
- * paper, but produced no usable audio here, so it stays off until it's been tested properly.
+ * The runtime the voice runs on. WebAssembly with 8-bit weights: ~92 MB, correct everywhere.
+ * Other combinations were measured and rejected (WebGPU garbles this model below fp32, and fp32
+ * is 325 MB); see docs/radio-voice.md before changing these.
  */
-export const KOKORO_DTYPE = "q8";
 export const KOKORO_DEVICE = "wasm";
+export const KOKORO_DTYPE = "q8";
+
+/**
+ * The HD voice is desktop-only for now. On a phone WebAssembly needs 6–11 s per line, which never
+ * catches up with the conversation, and every WebGPU runtime either garbles the audio or runs out
+ * of memory. See docs/radio-voice.md; the transcript works everywhere either way.
+ */
+export function isVoiceSupported(hasCoarsePointer: boolean): boolean {
+  return !hasCoarsePointer;
+}
 
 /** Said once right after loading, so the first real line doesn't pay for the model warming up. */
 export const WARM_UP_TEXT = "Radio check.";
+
+/**
+ * The warm-up also pulls the voice embeddings, which kokoro-js fetches on the first generate, so
+ * on a phone it is part download. It runs in the background and never fails the voice; this only
+ * stops it holding the generation queue forever.
+ */
+export const WARM_UP_TIMEOUT_MS = 120_000;
 
 /** A different voice for each side, so you can hear who's talking. Grades from the model card. */
 export const KOKORO_VOICES: Record<Speaker, { voice: string; speed: number }> =

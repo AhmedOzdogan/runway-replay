@@ -8,6 +8,7 @@ import {
   createKokoroClient,
   type GeneratedAudio,
   type KokoroClient,
+  type LoadStage,
 } from "../sound/kokoroClient";
 import { playThroughRadio } from "../sound/radioEffect";
 import {
@@ -28,6 +29,10 @@ export interface RadioVoice {
   status: RadioVoiceStatus;
   /** Download progress 0–100 while status is "loading". */
   progress: number;
+  /** What "loading" is doing: fetching the model, or warming it up on this device. */
+  loadStage: LoadStage;
+  /** Why the voice failed, shown on the card: a phone has no console to check. */
+  errorMessage: string | null;
   /** True while a line is audibly playing (keeps the replay at 1x until it's finished). */
   isSpeaking: boolean;
   /** Keys (see lineKey) of the lines whose audio is generated and ready to play. */
@@ -45,6 +50,8 @@ export interface RadioVoice {
 export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
   const [status, setStatus] = useState<RadioVoiceStatus>("off");
   const [progress, setProgress] = useState(0);
+  const [loadStage, setLoadStage] = useState<LoadStage>("downloading");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [speakingCount, setSpeakingCount] = useState(0);
   const [readyLineKeys, setReadyLineKeys] = useState<ReadonlySet<string>>(
     new Set(),
@@ -190,14 +197,25 @@ export function useRadioVoice(lines: RadioLine[], time: number): RadioVoice {
     client.current ??= createKokoroClient();
     setStatus("loading");
     client.current
-      .load(setProgress)
-      .then(() => setStatus("on"))
-      .catch(() => setStatus("error"));
+      .load((percent, stage) => {
+        setProgress(percent);
+        setLoadStage(stage);
+      })
+      .then(() => {
+        setErrorMessage(null);
+        setStatus("on");
+      })
+      .catch((error: unknown) => {
+        setErrorMessage(String(error));
+        setStatus("error");
+      });
   }, [status, stopPlaying]);
 
   return {
     status,
     progress,
+    loadStage,
+    errorMessage,
     isSpeaking: speakingCount > 0,
     readyLineKeys,
     spokenLineKeys,
