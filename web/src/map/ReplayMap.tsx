@@ -68,6 +68,9 @@ export function ReplayMap({
 }: ReplayMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [isHoveringPlane, setIsHoveringPlane] = useState(false);
+  // Two-finger rotation turns the map; the plane icons are drawn in screen space and have to
+  // follow it. React skips the re-render when the bearing hasn't actually changed.
+  const [bearing, setBearing] = useState(0);
 
   useEffect(() => {
     mapRef.current?.flyTo({ center: airport.center, zoom: DEFAULT_ZOOM });
@@ -94,6 +97,7 @@ export function ReplayMap({
       mapStyle={MAP_STYLE_URL}
       // Replaced by the compact control below, which the time bar can't cover.
       attributionControl={false}
+      onMove={(event) => setBearing(event.viewState.bearing)}
       onLoad={(event) => {
         brightenRunways(event);
         onReady();
@@ -116,7 +120,7 @@ export function ReplayMap({
       <DeckOverlay
         layers={[
           createTrailLayer(flights, time),
-          createPlaneLayer(planes, selectedPlane, time),
+          createPlaneLayer(planes, selectedPlane, time, bearing),
         ]}
         // Only aircraft are clickable: ground vehicles get a tooltip but no flight card.
         onHover={({ object }) =>
