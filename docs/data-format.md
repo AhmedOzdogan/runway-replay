@@ -45,6 +45,16 @@ sends no CORS headers, so a browser can't call it.
 example: `web/public/data/sample.json`). The pipeline also writes `web/public/data/latest.json`,
 `{"date": "2026-10-18"}`, which tells the app which day to load.
 
+Published days accumulate on the `data` branch, alongside an `index.json` written by
+`pipeline/write_index.py`:
+
+```json
+{ "days": [{ "date": "2026-10-21", "airports": ["AMS", "LHR", "MUC"] }, ...] }
+```
+
+The deployed site contains only the newest day. The branch is public and sends CORS headers
+through `raw.githubusercontent.com`, so older days can be fetched from there directly.
+
 ```json
 {
   "airport": "MUC",
@@ -57,6 +67,8 @@ example: `web/public/data/sample.json`). The pipeline also writes `web/public/da
       "type": "A319",
       "callsign": "DLH4AB",
       "category": "A3",
+      "origin": null,
+      "destination": { "icao": "EDDH", "city": "Hamburg" },
       "points": [[28800, 11.45, 48.30, 6000], ...]
     }
   ]
@@ -79,4 +91,46 @@ example: `web/public/data/sample.json`). The pipeline also writes `web/public/da
   transmitters never send one). `A1`–`A7` are aircraft, from light (`A1`) to heavy (`A5`) and
   rotorcraft (`A7`); `C1` is a ground emergency vehicle and `C2` a ground service vehicle, e.g. the
   `ELEKT…` vehicles that drive Munich's runways at night.
+- `origin` and `destination` are `{"icao", "city"}` or `null`: where the aircraft last came
+  down before this flight, and where it next came down after it. See "Where a flight went" below.
 - Ground speed isn't stored; derive it from consecutive points if needed.
+
+## Which flights belong to this airport
+
+A 50 km zone catches the neighbours too. Measured on 2026-10-22, by attributing each flight to the
+airport nearest its lowest point:
+
+| airport | flights in zone | this airport | a neighbour | overflights |
+|---|---|---|---|---|
+| Munich | 1,755 | 1,532 | 153 | 70 |
+| Heathrow | 5,620 | 2,061 | **3,371** | 188 |
+| Amsterdam | 3,248 | 3,053 | 167 | 28 |
+
+Heathrow's zone is 60% other airports' traffic — Gatwick 1,542 flights, Luton 551, City 295,
+Northolt 246, Farnborough 194. Without filtering, the app would show those as Heathrow flights and
+the simulated ATC would clear them to land on a runway they are nowhere near. Dropping them also
+cuts 46% of Heathrow's file.
+
+So `process.py` keeps a flight only when the airport nearest its lowest point is this airport, or
+when there is no airport within 20 km at all — that last case is a genuine overflight, which is
+this airport's traffic passing by rather than a neighbour's.
+
+## Where a flight went
+
+ADS-B carries no route: an aircraft broadcasts where it is, not where it is going. But one dump
+holds every aircraft's whole day worldwide, so a departure can be followed to wherever it next
+comes down, and an arrival back to where it last came down.
+
+Most airports have no surface coverage (Istanbul had **one** ground point in a whole day), so
+"landed" cannot mean "seen standing on the ground". It means the trace ends, or pauses for 15
+minutes or more, while the aircraft is below 4,000 ft — matched to an airport within 20 km. A
+touchdown less than 20 minutes after takeoff and within 50 km is a climb-out coverage gap, not an
+arrival, and is ignored.
+
+Measured on 2026-10-22: Munich resolved 87% of its departures, Amsterdam 85%, Heathrow 78%. The
+rest land after midnight UTC, or come down where no receiver sees them — hence `null`, which the
+app has to handle.
+
+The airport list is `pipeline/airports_reference.csv`: the large and medium airports from
+[OurAirports](https://ourairports.com/data/) (public domain), trimmed to `icao,city,lat,lon`.
+Regenerate it by downloading `airports.csv` from there and keeping those columns and types.

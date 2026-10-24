@@ -22,7 +22,7 @@ jobs:
   process:
     runs-on: ubuntu-latest
     env:
-      AIRPORTS: MUC IST HAN
+      AIRPORTS: MUC LHR AMS
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -53,13 +53,25 @@ jobs:
         run: python process.py --airport $AIRPORTS --date ${{ steps.day.outputs.date }}
 
       - if: steps.day.outputs.skip != 'true'
-        name: Force-push the files to the data branch
+        name: Add the day to the data branch
         working-directory: web/public/data
         run: |
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git init -b data
+          git remote add origin "$remote"
+          # Start from what the branch already holds: a shallow fetch, then reset --soft so the
+          # earlier days stay in the index even though this runner only has today's files on disk.
+          if git fetch --depth 1 origin data; then
+            git reset --soft FETCH_HEAD
+          else
+            echo "No data branch yet; this commit starts it."
+          fi
           git add *.json.gz latest.json
+          # index.json lists every day on the branch, for the date picker and for other tools.
+          # The file names come from git: this runner only has today's files on disk.
+          git ls-files '*.json.gz' | python3 ../../../pipeline/write_index.py > index.json
+          git add index.json
           git -c user.name="github-actions[bot]" \
             -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "Data for ${{ steps.day.outputs.date }}"
-          git push --force \
-            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" data
+          git push origin data
