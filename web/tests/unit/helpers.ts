@@ -18,6 +18,8 @@ export function flightThrough(
     type: "A320",
     callsign: "TST1",
     category: "A3",
+    origin: null,
+    destination: null,
     points: points.map(
       ([time, lon, altitude]): Point => [time, lon, 48.35, altitude],
     ),

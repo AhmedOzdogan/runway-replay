@@ -1,7 +1,8 @@
+from airports import Airport
 from filter import filter_points
 from resample import resample, split_flights
 
-MUC = (48.3538, 11.7861)
+MUC = Airport(48.3538, 11.7861, "EDDM")
 
 
 def trace_point(time, lat, lon, altitude, ground_speed=150, callsign=None, category=None):
