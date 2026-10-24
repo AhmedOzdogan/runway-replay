@@ -106,7 +106,9 @@ export function AboutDialog({ openAt, onClose }: AboutDialogProps) {
 
         <Heading>How to use it</Heading>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Pick an airport at the top: Munich, Istanbul or Hanoi.</li>
+          <li>
+            Pick an airport at the top: Munich, London Heathrow or Amsterdam.
+          </li>
           <li>
             Play or pause with the big button or <Key>Space</Key>. Change the
             speed with the buttons or keys <Key>1</Key>–<Key>5</Key> (1x–16x),

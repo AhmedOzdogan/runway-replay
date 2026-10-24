@@ -6,7 +6,7 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [x] Pipeline for one airport-day (stream dump → filter → split into flights → resample → `json.gz`)
 - [x] Replay with neon trails on a dark map (deck.gl TripsLayer)
 - [x] Controls: play/pause, time slider, ±1 minute, speed 1x–16x, clock, keyboard shortcuts
-- [x] Airport picker (Munich, Istanbul, Hanoi)
+- [x] Airport picker (Munich, London Heathrow, Amsterdam)
 - [x] Click an aircraft for its info card (type, registration, altitude, speed, status)
 - [x] Follow the selected plane with the camera
 - [x] Parked planes at the gates between flights

@@ -31,7 +31,8 @@ export function App() {
   const airport = AIRPORTS[airportCode];
   const { flights, status, isLoading } = useFlights(airportCode);
   const isStarting = !isMapReady || (isLoading && flights.length === 0);
-  // ponytail: clock is UTC, so Hanoi (UTC+7) starts its local day at 17:00; add per-airport offsets if that matters.
+  // ponytail: the clock is UTC, which is close enough for these three airports; add per-airport
+  // offsets if somewhere further east is ever added.
   // While the selected plane's radio talks, hold the replay at 1x so it can be read and heard.
   // Set from an effect below, so it takes effect one frame later: unnoticeable.
   const [isRadioSlowMotion, setIsRadioSlowMotion] = useState(false);

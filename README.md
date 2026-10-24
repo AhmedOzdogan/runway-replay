@@ -45,7 +45,7 @@ airport.
 
 ## ✨ Features
 
-- **✈️ A whole day at an airport** — Munich, Istanbul and Hanoi, from real ADS-B data.
+- **✈️ A whole day at an airport** — Munich, London Heathrow and Amsterdam, from real ADS-B data.
 - **⏯️ Timelapse controls** — play/pause, time slider, ±1 minute, 1x–16x speed. Keyboard: `Space`, `1`–`5`.
 - **💫 Neon trails** that fade behind every aircraft, with a plane icon pointing where it's heading.
 - **🅿️ Parked planes** stay at their gates between flights, and **ground vehicles** (tractors,
@@ -92,8 +92,9 @@ plus `latest.json` naming the day. The browser loads that file and does the rest
 parking, go-arounds and gap filling.
 
 **Daily update:** every night at 04:30 UTC, a GitHub Action (`.github/workflows/data.yml`) processes
-yesterday once adsb.lol has published it and force-pushes the files as a single commit to the orphan
-`data` branch. Only the newest day is kept, so the repository doesn't grow.
+yesterday once adsb.lol has published it and adds the files to the `data` branch, which keeps every
+day processed so far plus an `index.json` listing them. The deployed site carries only the newest
+day; older days stay on the branch until the date picker can load them.
 
 File formats are documented in [docs/data-format.md](docs/data-format.md).
 
@@ -133,7 +134,7 @@ npm run dev
 cd pipeline
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev]'
-python process.py --airport MUC IST HAN --date 2026-10-18
+python process.py --airport MUC LHR AMS --date 2026-10-18
 ```
 
 **3. Run the checks** (CI runs the same on every pull request and push):

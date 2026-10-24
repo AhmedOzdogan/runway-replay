@@ -1,7 +1,12 @@
 import type { Airport } from "../types/airport";
 
+/**
+ * Chosen for ADS-B coverage, which varies hugely by region: these three have enough ground
+ * receivers to show taxiing and parked aircraft, and enough coverage around them to tell where a
+ * departure went. Keep in sync with pipeline/airports.py; see docs/data-format.md.
+ */
 export const AIRPORTS: Record<string, Airport> = {
   MUC: { name: "Munich", center: [11.7861, 48.3538], elevationFt: 1487 },
-  IST: { name: "Istanbul", center: [28.7519, 41.2753], elevationFt: 325 },
-  HAN: { name: "Hanoi", center: [105.8072, 21.2212], elevationFt: 39 },
+  LHR: { name: "London", center: [-0.4543, 51.47], elevationFt: 83 },
+  AMS: { name: "Amsterdam", center: [4.7639, 52.3086], elevationFt: -11 },
 };
