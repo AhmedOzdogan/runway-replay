@@ -51,6 +51,10 @@ interface ReplayMapProps {
   time: number;
   isFollowing: boolean;
   onSelectPlane: (icao: string | null) => void;
+  /** The arcade follows one aircraft and asks about it; clicking another would swap it out. */
+  isPickingLocked?: boolean;
+  /** True while a card covers the bottom of a phone screen, so the aircraft sits above it. */
+  isCardAtBottom?: boolean;
   onReady: () => void;
 }
 
@@ -65,6 +69,8 @@ export function ReplayMap({
   isFollowing,
   onSelectPlane,
   onReady,
+  isPickingLocked = false,
+  isCardAtBottom = false,
 }: ReplayMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [isHoveringPlane, setIsHoveringPlane] = useState(false);
@@ -80,11 +86,17 @@ export function ReplayMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !followPosition) return;
+    // With a card along the bottom of a phone, centring would hide the aircraft behind it.
+    // Padding the bottom half puts it a quarter of the way down, in the open half of the screen.
+    const isPhone = window.matchMedia("(max-width: 639px)").matches;
+    const hidden =
+      isCardAtBottom && isPhone ? map.getContainer().clientHeight / 2 : 0;
+    const padding = { top: 0, right: 0, bottom: hidden, left: 0 };
     // Re-centering cancels MapLibre's own camera animation (a wheel zoom eases over a few hundred
     // ms), so stay out of the way while the user drives the camera: this runs again next frame.
     if (map.isZooming() || map.isRotating() || map.isMoving()) return;
-    map.jumpTo({ center: followPosition });
-  }, [followPosition]);
+    map.jumpTo({ center: followPosition, padding });
+  }, [followPosition, isCardAtBottom]);
 
   return (
     <MapLibreMap
@@ -120,15 +132,24 @@ export function ReplayMap({
       <DeckOverlay
         layers={[
           createTrailLayer(flights, time),
-          createPlaneLayer(planes, selectedPlane, time, bearing),
+          createPlaneLayer(
+            planes,
+            selectedPlane,
+            time,
+            bearing,
+            !isPickingLocked,
+          ),
         ]}
         // Only aircraft are clickable: ground vehicles get a tooltip but no flight card.
         onHover={({ object }) =>
           setIsHoveringPlane(
-            Boolean(object) && !isGroundVehicle((object as Plane).flight),
+            !isPickingLocked &&
+              Boolean(object) &&
+              !isGroundVehicle((object as Plane).flight),
           )
         }
         onClick={({ object }) => {
+          if (isPickingLocked) return;
           const plane = object as Plane | undefined;
           onSelectPlane(
             plane && !isGroundVehicle(plane.flight) ? plane.flight.icao : null,

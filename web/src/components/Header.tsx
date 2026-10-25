@@ -9,6 +9,7 @@ import logo3x from "../assets/logo@3x.png";
 import { AIRPORTS } from "../data/airports";
 import type { Flight } from "../types/flight";
 import { AirportPicker } from "./AirportPicker";
+import { ArcadeMenu } from "./ArcadeMenu";
 import { FlightSearch } from "./FlightSearch";
 
 const ICON_BUTTON_CLASS =
@@ -21,6 +22,9 @@ interface HeaderProps {
   onOpenHelp: () => void;
   flights: Flight[];
   onPickFlight: (flight: Flight) => void;
+  onPlayGuessDestination: () => void;
+  /** The arcade is asking about this airport's flights; switching would strand the game. */
+  isAirportLocked?: boolean;
 }
 
 export function Header({
@@ -30,6 +34,8 @@ export function Header({
   onOpenHelp,
   flights,
   onPickFlight,
+  onPlayGuessDestination,
+  isAirportLocked = false,
 }: HeaderProps) {
   // Phones only: the airport picker and the search live behind the hamburger. From 640px (sm) up
   // they sit in the header row and this stays unused.
@@ -56,7 +62,7 @@ export function Header({
 
       <span
         role="status"
-        className="order-2 ml-auto text-[13px] text-muted sm:order-3"
+        className="order-2 ml-auto text-[13px] text-muted sm:order-3 sm:ml-0"
       >
         {status}
       </span>
@@ -90,10 +96,11 @@ export function Header({
           so the map never shifts; from sm up it sits in the row between the logo and the status. */}
       <div
         id="header-menu"
-        className={`${isMenuOpen ? "flex" : "hidden"} absolute top-full right-0 left-0 z-20 order-5 flex-col gap-3 border-b border-line bg-panel px-4 py-3 shadow-card sm:static sm:order-2 sm:flex sm:flex-row sm:items-center sm:gap-4 sm:border-0 sm:p-0 sm:shadow-none`}
+        className={`${isMenuOpen ? "flex" : "hidden"} absolute top-full right-0 left-0 z-20 order-5 flex-col gap-3 border-b border-line bg-panel px-4 py-3 shadow-card sm:static sm:order-2 sm:flex sm:flex-1 sm:flex-row sm:items-center sm:gap-4 sm:border-0 sm:p-0 sm:shadow-none`}
       >
         <AirportPicker
           airports={AIRPORTS}
+          isLocked={isAirportLocked}
           selectedCode={airportCode}
           onSelect={(code) => {
             onSelectAirport(code);
@@ -105,6 +112,13 @@ export function Header({
           onPick={(flight) => {
             onPickFlight(flight);
             setIsMenuOpen(false);
+          }}
+        />
+        <ArcadeMenu
+          className="sm:ml-auto"
+          onPlayGuessDestination={() => {
+            setIsMenuOpen(false);
+            onPlayGuessDestination();
           }}
         />
       </div>
