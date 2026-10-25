@@ -28,7 +28,9 @@ export interface Parking {
 function headingBetween(from: Point, to: Point): number {
   const east = (to[LON] - from[LON]) * Math.cos(degreesToRadians(from[LAT]));
   const north = to[LAT] - from[LAT];
-  return (Math.atan2(east, north) * 180) / Math.PI;
+  // atan2 gives -180..180; compass headings are 0..359, which is what everything downstream wants.
+  const degrees = (Math.atan2(east, north) * 180) / Math.PI;
+  return (degrees + 360) % 360;
 }
 
 /** Where `flight` is at `time` (linear between points), or null if it isn't in the zone then. */

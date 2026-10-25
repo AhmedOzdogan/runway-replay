@@ -40,10 +40,11 @@ interface RadioTranscriptProps {
 export function RadioTranscript({ lines, time, voice }: RadioTranscriptProps) {
   const listRef = useRef<HTMLOListElement>(null);
 
-  // Keep the newest line in view whenever one is added (or removed by scrubbing back).
+  // Keep the newest line in view whenever one is added (or removed by scrubbing back). Scrolling
+  // the line rather than the list: on a phone the card scrolls, on desktop the list does.
   useEffect(() => {
-    const list = listRef.current;
-    if (list && lines.length > 0) list.scrollTop = list.scrollHeight;
+    if (lines.length === 0) return;
+    listRef.current?.lastElementChild?.scrollIntoView({ block: "nearest" });
   }, [lines.length]);
 
   return (
@@ -87,7 +88,8 @@ export function RadioTranscript({ lines, time, voice }: RadioTranscriptProps) {
       ) : (
         <ol
           ref={listRef}
-          className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1"
+          // On a phone the card itself scrolls; a second scroll area inside it traps the transcript.
+          className="flex flex-col gap-2 sm:max-h-56 sm:overflow-y-auto sm:pr-1"
         >
           {lines.map((line) => {
             const isAtc = line.speaker === "ATC";

@@ -33,7 +33,8 @@ Want to help with one of these? Comment on its issue first, see [CONTRIBUTING.md
 - [ ] Radio for overflights and ground movements
 - [ ] Zoom the camera in on a go-around
 - [ ] Spotter badges: A380, 747, military, private jets
-- [ ] Guess the destination: pick one of 4 cities when a plane takes off, keep score (needs route data)
+- [x] Guess the destination: pick one of 4 cities when a plane takes off, keep score (needs route data)
+- [x] Add compass.
 - [ ] Holding pattern loops highlighted in neon
 - [ ] Real origin/destination on the flight card (route database)
 

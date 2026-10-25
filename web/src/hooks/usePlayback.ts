@@ -11,6 +11,8 @@ export interface Playback {
   isPlaying: boolean;
   speed: number;
   togglePlay: () => void;
+  /** Start or stop without toggling, for the arcade: it plays a flight, then holds it. */
+  setPlaying: (isPlaying: boolean) => void;
   seek: (time: number) => void;
   setSpeed: (speed: number) => void;
 }
@@ -55,6 +57,10 @@ export function usePlayback(maxSpeed = Number.POSITIVE_INFINITY): Playback {
     setTime(Math.min(Math.max(newTime, 0), LAST_SECOND));
   }, []);
 
+  const setPlaying = useCallback((playing: boolean) => {
+    setIsPlaying(playing);
+  }, []);
+
   const togglePlay = useCallback(() => {
     setIsPlaying((playing) => !playing);
     // Pressing play at the end of the day starts it again.
@@ -94,5 +100,5 @@ export function usePlayback(maxSpeed = Number.POSITIVE_INFINITY): Playback {
     };
   }, [togglePlay]);
 
-  return { time, isPlaying, speed, togglePlay, seek, setSpeed };
+  return { time, isPlaying, speed, togglePlay, setPlaying, seek, setSpeed };
 }

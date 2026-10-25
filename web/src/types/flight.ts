@@ -13,6 +13,11 @@ export const ALTITUDE = 3;
 export interface RouteEnd {
   icao: string;
   city: string;
+  /**
+   * Seconds since 00:00 UTC when the aircraft came down there. Only on a destination: the day's
+   * data says when an aircraft last landed at its origin, not when it left again.
+   */
+  at?: number;
 }
 
 /** One aircraft's continuous visit to the airport zone (an arrival, a departure, or an overflight). */

@@ -172,3 +172,77 @@ export const SPOKEN_DIGITS = [
   "eight",
   "niner",
 ];
+
+/**
+ * ADS-B emitter categories as a spotter would read them. A1–A5 go by weight, and the heavy ones
+ * are the long-haul aircraft, which is a clue to where a flight is going.
+ */
+export const WEIGHT_CLASSES: Record<string, string> = {
+  A1: "Light",
+  A2: "Small",
+  A3: "Large",
+  A4: "High vortex",
+  A5: "Heavy",
+  A6: "High performance",
+  A7: "Rotorcraft",
+};
+
+/**
+ * Roughly how many seats a type carries in airline use. Not who was on board — ADS-B says
+ * nothing about the cabin — but a clue to the kind of flight: 180 seats is a European hop,
+ * 350 is long haul. Covers the types that actually show up; anything else goes unlabelled.
+ */
+export const TYPICAL_SEATS: Record<string, number> = {
+  // Regional jets
+  E75L: 80,
+  E190: 100,
+  E195: 120,
+  E295: 130,
+  BCS1: 135,
+  BCS3: 145,
+  // Narrowbodies
+  A319: 140,
+  A20N: 180,
+  A320: 180,
+  B737: 150,
+  B738: 190,
+  B38M: 190,
+  B739: 200,
+  A21N: 220,
+  A321: 220,
+  B734: 140,
+  B39M: 190,
+  // Turboprops and regional jets
+  AT45: 48,
+  AT76: 72,
+  DH8D: 78,
+  E145: 50,
+  CRJ9: 90,
+  CRJX: 100,
+  E290: 120,
+  // Business jets: a handful of seats is itself the clue.
+  PRM1: 6,
+  E55P: 7,
+  PC24: 8,
+  C55B: 9,
+  C56X: 9,
+  E550: 9,
+  GA5C: 14,
+  // Widebodies
+  A306: 250,
+  B763: 260,
+  A332: 270,
+  A333: 290,
+  A339: 290,
+  B788: 250,
+  B789: 300,
+  B78X: 330,
+  A359: 320,
+  A35K: 370,
+  B764: 240,
+  B772: 310,
+  B77W: 370,
+  B744: 400,
+  B748: 410,
+  A388: 500,
+};

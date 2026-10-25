@@ -109,7 +109,7 @@ export function FlightCard({
   time,
   airportCode,
   airport,
-  isFollowing,
+  isFollowing = true,
   radioLines,
   radioVoice,
   onFollowChange,
@@ -129,7 +129,7 @@ export function FlightCard({
       aria-live="polite"
       // Sized against the map area, not the viewport: mobile Chrome's vh units assume the URL bar
       // is hidden, which pushed the card into the time bar. The reserved space is the time bar.
-      className="absolute top-4 right-4 z-10 flex max-h-[calc(100%-9rem)] w-[min(350px,calc(100vw-32px))] flex-col rounded-2xl border border-line bg-panel/95 p-4 shadow-card backdrop-blur-sm sm:max-h-[calc(100%-11rem)]"
+      className="absolute inset-x-3 bottom-3 z-10 flex max-h-[62%] flex-col rounded-2xl border border-line bg-panel/95 p-4 shadow-card backdrop-blur-sm sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:max-h-[calc(100%-11rem)] sm:w-[min(350px,calc(100vw-32px))]"
     >
       <button
         type="button"

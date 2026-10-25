@@ -14,3 +14,12 @@ export function formatDuration(seconds: number): string {
     ? `${Math.max(1, Math.round(seconds))} s`
     : `${Math.round(seconds / 60)} min`;
 }
+
+/** "~ 5 h 10 m", or "~ 55 min" under an hour: how long a flight was in the air. */
+export function formatFlightTime(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `~ ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `~ ${hours} h` : `~ ${hours} h ${rest} m`;
+}

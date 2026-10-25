@@ -83,6 +83,8 @@ export function createPlaneLayer(
   selectedPlane: Plane | null,
   time: number,
   bearing: number,
+  /** False while the arcade is asking about one aircraft: picking another would change it. */
+  isPickable = true,
 ) {
   const iconColor = (plane: Plane): Color => {
     if (plane === selectedPlane) return NEON;
@@ -100,7 +102,7 @@ export function createPlaneLayer(
     id: "planes",
     // The selected plane is drawn again at the end so it's on top.
     data: selectedPlane ? [...planes, selectedPlane] : planes,
-    pickable: true,
+    pickable: isPickable,
     getIcon: (plane) =>
       isGroundVehicle(plane.flight) ? VEHICLE_ICON : PLANE_ICON,
     getPosition: (plane) => plane.position,

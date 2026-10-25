@@ -28,6 +28,8 @@ const SKIP_BUTTON_CLASSES =
 interface TimeBarProps extends Playback {
   /** True while the radio is talking and the replay is held at 1x. */
   isRadioSlowMotion?: boolean;
+  /** The arcade drives the replay itself: scrubbing or changing speed mid-question would cheat. */
+  isLocked?: boolean;
 }
 
 export function TimeBar({
@@ -38,6 +40,7 @@ export function TimeBar({
   seek,
   setSpeed,
   isRadioSlowMotion = false,
+  isLocked = false,
 }: TimeBarProps) {
   // The speed it's actually playing at: 1x while the radio talks, otherwise the chosen one.
   const currentSpeed = isRadioSlowMotion ? 1 : speed;
@@ -81,7 +84,8 @@ export function TimeBar({
           )}
           <input
             type="range"
-            className="absolute inset-0 w-full cursor-pointer appearance-none opacity-0 [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:border-0 [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:appearance-none"
+            disabled={isLocked}
+            className="absolute inset-0 w-full cursor-pointer appearance-none opacity-0 disabled:cursor-not-allowed [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:border-0 [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:appearance-none"
             min={0}
             max={LAST_SECOND}
             step={1}
@@ -102,13 +106,16 @@ export function TimeBar({
 
       {/* Phones: play controls on their own centred row, then clock (left) and speed (right).
           From sm up: three columns, with the play controls exactly in the middle. */}
-      <div className="flex flex-wrap items-center justify-between gap-y-3 sm:grid sm:grid-cols-[1fr_auto_1fr]">
+      <div
+        className={`flex flex-wrap items-center justify-between gap-y-3 sm:grid sm:grid-cols-[1fr_auto_1fr] ${isLocked ? "opacity-60" : ""}`}
+      >
         <div className="order-first flex w-full items-center justify-center gap-3 sm:order-none sm:col-start-2 sm:w-auto">
           <button
             type="button"
             className={SKIP_BUTTON_CLASSES}
             aria-label="Back 1 minute"
             title="Back 1 minute"
+            disabled={isLocked}
             onClick={() => seek(time - SKIP_SECONDS)}
           >
             <TbRewindBackward60 size={24} />
@@ -117,7 +124,10 @@ export function TimeBar({
             type="button"
             className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-neon text-night shadow-neon transition-transform hover:scale-105 active:scale-95"
             aria-label={isPlaying ? "Pause" : "Play"}
-            title="Play/pause (Space)"
+            title={
+              isLocked ? "The arcade is flying this one" : "Play/pause (Space)"
+            }
+            disabled={isLocked}
             onClick={togglePlay}
           >
             {isPlaying ? (
@@ -131,6 +141,7 @@ export function TimeBar({
             className={SKIP_BUTTON_CLASSES}
             aria-label="Forward 1 minute"
             title="Forward 1 minute"
+            disabled={isLocked}
             onClick={() => seek(time + SKIP_SECONDS)}
           >
             <TbRewindForward60 size={24} />
@@ -155,7 +166,8 @@ export function TimeBar({
         </div>
 
         <fieldset
-          className="flex rounded-full border border-line bg-night/60 p-0.5 sm:col-start-3 sm:row-start-1 sm:justify-self-end"
+          disabled={isLocked}
+          className="flex rounded-full border border-line bg-night/60 p-0.5 disabled:opacity-50 sm:col-start-3 sm:row-start-1 sm:justify-self-end"
           aria-label="Playback speed"
         >
           {SPEEDS.map((speedOption, index) => {

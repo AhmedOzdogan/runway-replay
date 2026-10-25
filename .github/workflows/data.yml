@@ -59,10 +59,12 @@ jobs:
           remote="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git init -b data
           git remote add origin "$remote"
-          # Start from what the branch already holds: a shallow fetch, then reset --soft so the
-          # earlier days stay in the index even though this runner only has today's files on disk.
+          # Start from what the branch already holds: a shallow fetch, then a mixed reset, which
+          # fills the index with the earlier days even though this runner only has today's files
+          # on disk. It has to be --mixed: --soft leaves the index empty in a fresh repository, so
+          # the commit would hold today's files alone and count every earlier day as deleted.
           if git fetch --depth 1 origin data; then
-            git reset --soft FETCH_HEAD
+            git reset --mixed FETCH_HEAD
           else
             echo "No data branch yet; this commit starts it."
           fi
