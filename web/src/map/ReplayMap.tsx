@@ -10,6 +10,7 @@ import {
 import { isGroundVehicle } from "../flights/vehicle";
 import type { Airport } from "../types/airport";
 import type { Flight, Plane } from "../types/flight";
+import { Compass } from "./Compass";
 import { DeckOverlay } from "./DeckOverlay";
 import { createPlaneLayer, createTrailLayer } from "./layers";
 
@@ -119,6 +120,12 @@ export function ReplayMap({
     >
       {/* Map credits (required by CARTO and OpenStreetMap), as a small ⓘ in the top left. */}
       <AttributionControl position="top-left" compact />
+      <Compass
+        bearing={bearing}
+        onResetNorth={() =>
+          mapRef.current?.easeTo({ bearing: 0, pitch: 0, duration: 400 })
+        }
+      />
       <Marker
         longitude={airport.center[0]}
         latitude={airport.center[1]}
