@@ -16,7 +16,15 @@ from airports import AIRPORTS, Airport
 from download import stream_dump
 from filter import filter_points
 from resample import resample, split_flights
-from routes import Landing, airport_after, airport_before, landings
+from routes import (
+    Landing,
+    Leg,
+    airport_after,
+    airport_before,
+    distance_km,
+    landings,
+    looks_plausible,
+)
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "web" / "public" / "data"
 
@@ -40,9 +48,29 @@ def uses_this_airport(points: list, airport: Airport, reference: list[ReferenceA
     return used is None or used.icao == airport.icao
 
 
-def named(found: ReferenceAirport | None) -> dict | None:
-    """The airport as it goes into the file: the code to match on, the city to show."""
-    return {"icao": found.icao, "city": found.city} if found else None
+def flight_hours(airport: Airport, leg: Leg, left_at: float) -> float | None:
+    """How long the flight took, or None when the answer doesn't fit the distance."""
+    hours = (leg.at - left_at) / 3600
+    km = distance_km(airport.lat, airport.lon, leg.airport.lat, leg.airport.lon)
+    return hours if looks_plausible(km, hours) else None
+
+
+def named(found: ReferenceAirport | Leg | None, hours: float | None = None) -> dict | None:
+    """The airport as it goes into the file: the code to match on, the city to show.
+
+    A destination also carries `at`, the second of the day it came down there, so the app can say
+    how long the flight took. An origin can't: the day's data says when the aircraft last landed
+    there, not when it left.
+    """
+    if found is None:
+        return None
+    if isinstance(found, Leg):
+        named_leg = {"icao": found.airport.icao, "city": found.airport.city}
+        # Only a flight time that fits the distance is published; the app shows "—" without it.
+        if hours is not None:
+            named_leg["at"] = round(found.at)
+        return named_leg
+    return {"icao": found.icao, "city": found.city}
 
 
 def route_ends(
@@ -61,7 +89,8 @@ def route_ends(
         destination = airport_after(
             arrivals, points[-1][OUT_TIME], airport.lat, airport.lon, reference
         )
-    return named(origin), named(destination)
+    hours = flight_hours(airport, destination, points[-1][OUT_TIME]) if destination else None
+    return named(origin), named(destination, hours)
 
 
 def flights_near(
