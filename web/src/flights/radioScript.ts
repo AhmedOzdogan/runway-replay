@@ -5,6 +5,7 @@ import {
 } from "../data/radioPhrases";
 import type { Airport } from "../types/airport";
 import { ALTITUDE, type Flight, TIME } from "../types/flight";
+import { SESSION_SEED, stableIndex } from "../utils/stable";
 import { planeAt } from "./planes";
 import {
   fillTemplate,
@@ -12,16 +13,12 @@ import {
   spokenCallsign,
   spokenHeading,
   spokenRunway,
-  stableIndex,
   writtenAltitude,
   writtenCallsign,
   writtenHeading,
   writtenRunway,
 } from "./radio";
 import { classifyFlight, type FlightKind } from "./status";
-
-/** Chosen once per page load: the same flight says the same thing while you watch, but differs next visit. */
-export const SESSION_SEED = Math.floor(Math.random() * 1_000_000);
 
 /**
  * Seconds between two lines of the same exchange, so a conversation unfolds instead of appearing

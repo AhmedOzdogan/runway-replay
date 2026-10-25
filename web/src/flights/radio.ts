@@ -110,11 +110,3 @@ export function fillTemplate(
 ): string {
   return template.replace(/\{(\w+)\}/g, (_match, key) => values[key] ?? "");
 }
-
-export function stableIndex(seed: string, count: number): number {
-  let hash: number = 0;
-  for (const char of seed) {
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  }
-  return hash % count;
-}
