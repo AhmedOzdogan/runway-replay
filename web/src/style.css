@@ -14,6 +14,12 @@
   --shadow-card: 0 8px 30px #0008;
   --text-shadow-neon: 0 0 12px #22d3ee88;
   --animate-pop: pop 400ms ease-out;
+  /* Revealing the right answer: an aircraft takes off along the option. */
+  --animate-takeoff: takeoff 1300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-contrail: contrail 1300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-sweep: sweep 1100ms ease-out forwards;
+  --animate-win-pulse: win-pulse 1300ms ease-out forwards;
+  --animate-miss-shake: miss-shake 450ms ease-out;
 
   @keyframes pop {
     from {
@@ -23,6 +29,83 @@
     to {
       scale: 1;
       opacity: 1;
+    }
+  }
+
+  @keyframes takeoff {
+    /* The row is wide and short, so the climb is shallow: the nose stays near level (90deg points
+       it right) and lifts only as far as the path itself rises, or it looks pointed at the sky. */
+    0% {
+      left: -18%;
+      bottom: 22%;
+      opacity: 0;
+      transform: rotate(92deg) scale(0.9);
+    }
+    10% {
+      opacity: 1;
+    }
+    60% {
+      left: 46%;
+      bottom: 30%;
+      transform: rotate(87deg) scale(1.08);
+    }
+    100% {
+      left: 124%;
+      bottom: 62%;
+      opacity: 0;
+      transform: rotate(80deg) scale(1.25);
+    }
+  }
+
+  @keyframes contrail {
+    0% {
+      transform: scaleX(0);
+      opacity: 0.85;
+    }
+    55% {
+      transform: scaleX(0.6);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+
+  @keyframes sweep {
+    from {
+      transform: translateX(-130%) skewX(-12deg);
+    }
+    to {
+      transform: translateX(260%) skewX(-12deg);
+    }
+  }
+
+  @keyframes win-pulse {
+    0% {
+      box-shadow: 0 0 0 0 #22d3ee66;
+    }
+    55% {
+      box-shadow: 0 0 22px 3px #22d3ee40;
+    }
+    100% {
+      box-shadow: 0 0 0 0 #22d3ee00;
+    }
+  }
+
+  @keyframes miss-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-4px);
+    }
+    45% {
+      transform: translateX(4px);
+    }
+    70% {
+      transform: translateX(-2px);
     }
   }
 }
