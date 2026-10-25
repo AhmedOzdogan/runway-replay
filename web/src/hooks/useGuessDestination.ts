@@ -166,7 +166,15 @@ export function useGuessDestination({
     // Stop just short of the last point. A frame past it and the aircraft is outside its own
     // data: it vanishes from the map and the card's altitude and heading go blank. Stopping
     // early keeps it on screen, with no jump backwards.
-    if (time >= leavesAt - STOP_BEFORE_SECONDS) setPlaying(false);
+    //
+    // The window matters as much as the threshold. Rounds are not in time order, so for a frame
+    // after a new question the clock still holds the last one's time — often hours later than
+    // this flight. Without an upper bound that stale value reads as "already past the end" and
+    // the replay stops for good.
+    const isLeaving =
+      time >= leavesAt - STOP_BEFORE_SECONDS &&
+      time <= leavesAt + STOP_BEFORE_SECONDS;
+    if (isLeaving) setPlaying(false);
   }, [phase, leavesAt, time, setPlaying]);
 
   const start = useCallback(
