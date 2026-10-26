@@ -2,6 +2,7 @@
 
 import gzip
 import json
+import os
 import tarfile
 import urllib.request
 from collections.abc import Iterator
@@ -33,6 +34,16 @@ class ConcatenatedStream:
             self._response = urllib.request.urlopen(next_url, timeout=SOCKET_TIMEOUT_SECONDS)
 
 
+def _asking_github(url: str) -> urllib.request.Request:
+    """The API allows 60 requests an hour per IP, which CI runners share with everyone else — and
+    that is what a `403: rate limit exceeded` on a nightly run means. A token raises it to 5,000.
+    Without one (a laptop) the plain request is fine: this is one call per run.
+    """
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    return urllib.request.Request(url, headers=headers)
+
+
 def dump_urls(date: str) -> list[str]:
     """One day's dump is a tar split into ~2 GB parts (.tar.aa, .tar.ab, ...).
 
@@ -41,7 +52,8 @@ def dump_urls(date: str) -> list[str]:
     """
     tag = f"v{date.replace('-', '.')}-planes-readsb-prod-0"
     with urllib.request.urlopen(
-        RELEASE_API.format(year=date[:4], tag=tag), timeout=SOCKET_TIMEOUT_SECONDS
+        _asking_github(RELEASE_API.format(year=date[:4], tag=tag)),
+        timeout=SOCKET_TIMEOUT_SECONDS,
     ) as response:
         assets = json.load(response)["assets"]
     # Sorted: the parts only form the tar in name order, which the API doesn't promise.
