@@ -93,6 +93,9 @@ through `raw.githubusercontent.com`, so older days can be fetched from there dir
   `ELEKT…` vehicles that drive Munich's runways at night.
 - `origin` and `destination` are `{"icao", "city"}` or `null`: where the aircraft last came
   down before this flight, and where it next came down after it. See "Where a flight went" below.
+- A `destination` also carries `at`, the second of the day it came down there, so the app can say
+  how long the flight took (`at` minus the flight's last point). An `origin` has no equivalent:
+  the day's data says when an aircraft last *landed* at its origin, not when it left again.
 - Ground speed isn't stored; derive it from consecutive points if needed.
 
 ## Which flights belong to this airport
@@ -130,6 +133,15 @@ arrival, and is ignored.
 Measured on 2026-10-22: Munich resolved 87% of its departures, Amsterdam 85%, Heathrow 78%. The
 rest land after midnight UTC, or come down where no receiver sees them — hence `null`, which the
 app has to handle.
+
+A landing is timed from the **start** of that low run, when the aircraft came down through
+4,000 ft. Timing it from the end would be wrong: with ground coverage an aircraft keeps
+transmitting at its stand for hours, which once made a 50-minute hop to Frankfurt look like seven.
+
+Even so, a first landing can be invisible — no gap, no long stand, nobody watching — and the one
+we find is a later leg. So `at` is only written when the flight time **fits the distance**
+(`routes.looks_plausible`: within twice `distance / 800 km/h + 45 min`). Around 95% of resolved
+destinations keep their time; the rest show nothing rather than something wrong.
 
 The airport list is `pipeline/airports_reference.csv`: the large and medium airports from
 [OurAirports](https://ourairports.com/data/) (public domain), trimmed to `icao,city,lat,lon`.
