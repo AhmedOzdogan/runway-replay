@@ -41,21 +41,32 @@ pipeline/                 Python: adsb.lol daily dump -> one .json.gz per airpor
   download.py             stream the dump (never saved to disk)
   filter.py, resample.py  keep points near the airport (with callsign and ADS-B category),
                           split into flights, thin to 5 s
+  routes.py               follow the aircraft through the rest of its day: where it came down,
+                          when, and whether that flight time fits the distance
+  airport_lookup.py       which airport a position is at, from airports_reference.csv (the large
+                          and medium airports of ourairports.com, public domain)
+  write_index.py          index.json for the data branch, listing the days published so far
 web/src/
   main.tsx                React entry point: renders <App /> into index.html's #root
   App.tsx                 page layout and app state (airport, selected plane, follow)
   components/             UI: Header, Footer, AirportPicker, TimeBar, FlightCard, RadioTranscript,
-                          GoAroundBanner, ToggleButton
-  map/                    ReplayMap (MapLibre via react-map-gl), DeckOverlay, deck.gl layers
+                          GoAroundBanner, ToggleButton, ArcadeMenu, GuessDestinationCard
+  map/                    ReplayMap (MapLibre via react-map-gl), DeckOverlay, deck.gl layers, Compass
   hooks/                  usePlayback (clock + keyboard), useFlights (loading), useGoAroundAlert,
-                          useRadioVoice (speaks radio lines with the HD voice)
+                          useRadioVoice (speaks radio lines with the HD voice),
+                          useGuessDestination (the arcade game: rounds, countdown, replay control)
+  arcade/                 one folder per game. guessDestination: pickFlights, destinationsOf,
+                          pickOptions, createRounds, checkDestination, score, dailyPlay — all pure,
+                          so a game can be built and tested without any UI
   flights/                pure flight logic: positions, parking, estimates, go-arounds, ground vehicles,
-                          status text, radio (radio.ts: written/spoken forms, radioScript.ts: conversations)
+                          status text, cabin description, radio (radio.ts: written/spoken forms,
+                          radioScript.ts: conversations)
   sound/                  HD radio voice: Kokoro in a Web Worker (kokoro.worker.ts, kokoroClient.ts),
                           the radio audio effect (radioEffect.ts), and its pure logic (radioVoicePlan.ts)
   data/                   airport list, airline/aircraft/radio names, radio phrases, loading the .json.gz files
   types/                  data types (Flight, Point, Plane, Airport)
-  utils/                  small helpers (formatting, distance, a serial task queue)
+  utils/                  small helpers (formatting, distance, a serial task queue, stable
+                          pseudo-randomness: stableIndex and stableRank)
   assets/                 the header logo in 1x/2x/3x
   style.css               Tailwind import + theme tokens (colours, glow, animation)
 web/tests/unit/           Vitest unit tests, mirroring src/ (flights/, sound/, utils/; e.g.

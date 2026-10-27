@@ -23,9 +23,9 @@ No backend, no database, no API keys: one static site and one nightly data file.
 
 **Live demo:** https://ahmedozdogan.github.io/runway-replay/
 
-<img src="docs/screenshot_web.png" alt="Runway Replay replaying Munich airport: neon approach trails, parked planes at the gates, and a flight card showing Lufthansa DLH2XN on approach with its ATC radio transcript">
+<img src="docs/screenshot_web.png" alt="Runway Replay replaying Munich: neon approach trails, parked planes at the gates, a compass, and a flight card showing Air France AFR32DE from Paris on approach with its ATC radio transcript">
 
-<img src="docs/screenshot_mobile.png" alt="Runway Replay on a phone: the same replay with the floating media-player time bar" width="260">
+<img src="docs/screenshot_mobile.png" alt="Runway Replay on a phone: the same replay with the floating media-player time bar and the compass" width="260">
 
 </div>
 
@@ -60,6 +60,12 @@ airport.
   simulated.  The replay slows to 1x while the radio talks.
 - **🔊 HD radio voice (optional)** — switch it on in the radio panel to hear the conversation, spoken
   by the open-source Kokoro voice model running in your browser, through an aircraft-radio filter.
+- **🗺️ Where each flight went** — a departure's destination is worked out by following the same
+  aircraft through the rest of the worldwide dump, along with how long it stayed in the air.
+- **🎯 Arcade: guess the destination** — one game a day. A flight leaves, you get a minute and the
+  clues a spotter would use (aircraft, cabin, weight class, time airborne, altitude, heading) to
+  say where it's going, while the replay follows it across the map.
+- **🧭 Compass** — the map rotates with two fingers; the compass turns with it and puts north back.
 - **🩹 Gap filling** — receivers often lose aircraft just above the runway; Runway Replay estimates
   the last bit of the landing or the start of the takeoff roll (and says so on the card).
 - **📱 Works on phones** — the time bar becomes a floating media-player panel.
@@ -150,8 +156,9 @@ cd web && npm run lint && npm test && npm run build
 pipeline/     Python: daily dump → one .json.gz per airport-day
 web/src/
   components/ React UI (Header, Footer, TimeBar, FlightCard, RadioTranscript, …)
-  map/        MapLibre map and deck.gl layers
-  hooks/      playback clock, data loading, go-around alerts, radio voice
+  map/        MapLibre map, deck.gl layers, compass
+  hooks/      playback clock, data loading, go-around alerts, radio voice, the arcade game
+  arcade/     the games, one folder each (guessDestination: rounds, options, scoring)
   flights/    pure flight logic (positions, go-arounds, ground vehicles, radio conversation…)
   sound/      HD radio voice: Kokoro in a Web Worker, aircraft-radio audio effect
   data/       airports, airline and aircraft names, radio phrases
